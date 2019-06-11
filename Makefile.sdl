@@ -1,0 +1,27 @@
+TARGET  = libcc.a
+CLASSES = \
+	cc_list      \
+	cc_log       \
+	cc_map       \
+	cc_memory    \
+	cc_multimap  \
+	cc_timestamp \
+	cc_unit      \
+	cc_workq
+SOURCE  = $(CLASSES:%=%.c)
+OBJECTS = $(SOURCE:.c=.o)
+HFILES  = $(CLASSES:%=%.h)
+OPT     = -O2 -Wall
+CFLAGS  = $(OPT)
+LDFLAGS = -lm
+AR      = ar
+
+all: $(TARGET)
+
+$(TARGET): $(OBJECTS)
+	$(AR) rcs $@ $(OBJECTS)
+
+clean:
+	rm -f $(OBJECTS) *~ \#*\# $(TARGET)
+
+$(OBJECTS): $(HFILES)
