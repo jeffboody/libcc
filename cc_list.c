@@ -229,11 +229,7 @@ void cc_list_delete(cc_list_t** _self)
 		if(self->size > 0)
 		{
 			LOGE("memory leak detected: size=%i", self->size);
-		}
-
-		while(self->size > 0)
-		{
-			cc_list_pop(self);
+			cc_list_discard(self);
 		}
 
 		FREE(self);
@@ -367,40 +363,6 @@ cc_list_findSorted(const cc_list_t* self, const void* data,
 		item = item->next;
 	}
 	return NULL;
-}
-
-int cc_list_push(cc_list_t* self, const void* data)
-{
-	assert(self);
-	assert(data);
-
-	cc_listIter_t* item;
-	item = cc_listIter_new(self, NULL, self->head, data);
-	return (item == NULL) ? 0 : 1;
-}
-
-const void* cc_list_pop(cc_list_t* self)
-{
-	assert(self);
-
-	return cc_listIter_delete(&self->head, self);
-}
-
-int cc_list_enqueue(cc_list_t* self, const void* data)
-{
-	assert(self);
-	assert(data);
-
-	cc_listIter_t* item;
-	item = cc_listIter_new(self, self->tail, NULL, data);
-	return (item == NULL) ? 0 : 1;
-}
-
-const void* cc_list_dequeue(cc_list_t* self)
-{
-	assert(self);
-
-	return cc_list_pop(self);
 }
 
 cc_listIter_t*

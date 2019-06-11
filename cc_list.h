@@ -59,12 +59,6 @@ cc_listIter_t* cc_list_find(const cc_list_t* self,
 cc_listIter_t* cc_list_findSorted(const cc_list_t* self,
                                   const void* data,
                                   cc_listcmp_fn compare);
-int            cc_list_push(cc_list_t* self,
-                            const void* data);
-const void*    cc_list_pop(cc_list_t* self);
-int            cc_list_enqueue(cc_list_t* self,
-                               const void* data);
-const void*    cc_list_dequeue(cc_list_t* self);
 cc_listIter_t* cc_list_insert(cc_list_t* self,
                               cc_listIter_t* item,
                               const void* data);
