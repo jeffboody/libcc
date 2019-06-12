@@ -8,6 +8,21 @@ CLASSES = \
 	cc_timestamp \
 	cc_unit      \
 	cc_workq
+ifeq ($(CC_USE_MATH),1)
+	CLASSES += \
+		math/cc_orientation \
+		math/cc_quaternion  \
+		math/cc_plane       \
+		math/cc_fplane      \
+		math/cc_ray         \
+		math/cc_sphere      \
+		math/cc_rect2f      \
+		math/cc_mat3f       \
+		math/cc_mat4f       \
+		math/cc_vec2f       \
+		math/cc_vec3f       \
+		math/cc_vec4f
+endif
 SOURCE  = $(CLASSES:%=%.c)
 OBJECTS = $(SOURCE:.c=.o)
 HFILES  = $(CLASSES:%=%.h)
