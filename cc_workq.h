@@ -84,7 +84,8 @@ void        cc_workq_reset(cc_workq_t* self, int blocking);
 void        cc_workq_purge(cc_workq_t* self);
 int         cc_workq_run(cc_workq_t* self, void* task,
                          int priority);
-int         cc_workq_cancel(cc_workq_t* self, void* task);
+int         cc_workq_cancel(cc_workq_t* self, void* task,
+                            int blocking);
 int         cc_workq_status(cc_workq_t* self, void* task);
 int         cc_workq_pending(cc_workq_t* self);
 

@@ -564,7 +564,8 @@ int cc_workq_run(cc_workq_t* self, void* task,
 	return CC_WORKQ_ERROR;
 }
 
-int cc_workq_cancel(cc_workq_t* self, void* task)
+int cc_workq_cancel(cc_workq_t* self, void* task,
+                    int blocking)
 {
 	assert(self);
 	assert(task);
@@ -588,6 +589,16 @@ int cc_workq_cancel(cc_workq_t* self, void* task)
 		while((iter = cc_list_find(self->queue_active, task,
 		                           cc_taskcmp_fn)) != NULL)
 		{
+			if(blocking == 0)
+			{
+				cc_workqNode_t* node;
+				node = (cc_workqNode_t*)
+				       cc_list_peekIter(iter);
+				status = node->status;
+				pthread_mutex_unlock(&self->mutex);
+				return status;
+			}
+
 			// must wait for active task to complete
 			pthread_cond_wait(&self->cond_complete,
 			                  &self->mutex);
