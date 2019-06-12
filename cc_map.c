@@ -225,8 +225,7 @@ int cc_map_empty(const cc_map_t* self)
 }
 
 cc_mapIter_t*
-cc_map_head(const cc_map_t* self,
-                 cc_mapIter_t* iter)
+cc_map_head(const cc_map_t* self, cc_mapIter_t* iter)
 {
 	assert(self);
 	assert(iter);
@@ -310,9 +309,9 @@ const char* cc_map_key(const cc_mapIter_t* iter)
 	return iter->key;
 }
 
-const void* cc_map_find(const cc_map_t* self,
-                             cc_mapIter_t* iter,
-                             const char* key)
+const void*
+cc_map_find(const cc_map_t* self, cc_mapIter_t* iter,
+            const char* key)
 {
 	assert(self);
 	assert(iter);

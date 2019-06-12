@@ -29,6 +29,7 @@
 #include <string.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+
 #include "cc_log.h"
 
 // Android Systrace
@@ -36,7 +37,8 @@
 // systrace.py --time=10 -o trace.html gfx sched freq idle load -a <PACKAGE>
 int g_trace_fd = -1;
 
-void cc_log(const char* func, int line, int type, const char* tag, const char* fmt, ...)
+void cc_log(const char* func, int line, int type,
+            const char* tag, const char* fmt, ...)
 {
 	assert(func);
 	assert(tag);
@@ -52,13 +54,25 @@ void cc_log(const char* func, int line, int type, const char* tag, const char* f
 			int tid = (int) syscall(SYS_gettid);
 		#endif
 		if(type == ANDROID_LOG_DEBUG)
-			snprintf(buf, 256, "D/%i/%s: %s@%i ", tid, tag, func, line);
+		{
+			snprintf(buf, 256, "D/%i/%s: %s@%i ",
+			         tid, tag, func, line);
+		}
 		else if(type == ANDROID_LOG_INFO)
-			snprintf(buf, 256, "I/%i/%s: %s@%i ", tid, tag, func, line);
+		{
+			snprintf(buf, 256, "I/%i/%s: %s@%i ",
+			         tid, tag, func, line);
+		}
 		else if(type == ANDROID_LOG_WARN)
-			snprintf(buf, 256, "W/%i/%s: %s@%i ", tid, tag, func, line);
+		{
+			snprintf(buf, 256, "W/%i/%s: %s@%i ",
+			         tid, tag, func, line);
+		}
 		else if(type == ANDROID_LOG_ERROR)
-			snprintf(buf, 256, "E/%i/%s: %s@%i ", tid, tag, func, line);
+		{
+			snprintf(buf, 256, "E/%i/%s: %s@%i ",
+			         tid, tag, func, line);
+		}
 	#endif
 
 	int size = (int) strlen(buf);
@@ -82,7 +96,8 @@ void cc_trace_init(void)
 	#ifdef ANDROID
 		if(g_trace_fd == -1)
 		{
-			g_trace_fd = open("/sys/kernel/debug/tracing/trace_marker", O_WRONLY);
+			g_trace_fd = open("/sys/kernel/debug/tracing/trace_marker",
+			                  O_WRONLY);
 		}
 	#endif
 }
@@ -93,10 +108,8 @@ void cc_trace_begin(const char* func, int line)
 		if(g_trace_fd)
 		{
 			char buf[256];
-			int len = snprintf(buf, 256,
-			                   "B|%d|%s_%i",
-			                   getpid(),
-			                   func, line);
+			int len = snprintf(buf, 256, "B|%d|%s_%i",
+			                   getpid(), func, line);
 			write(g_trace_fd, buf, len);
 		}
 	#endif

@@ -21,8 +21,8 @@
  *
  */
 
-#include <stdlib.h>
 #include <assert.h>
+#include <stdlib.h>
 
 #define LOG_TAG "cc"
 #include "cc_list.h"
@@ -212,9 +212,9 @@ cc_list_t* cc_list_new(void)
 		return NULL;
 	}
 
-	self->size   = 0;
-	self->head   = NULL;
-	self->tail   = NULL;
+	self->size = 0;
+	self->head = NULL;
+	self->tail = NULL;
 
 	return self;
 }
@@ -241,7 +241,7 @@ void cc_list_discard(cc_list_t* self)
 {
 	assert(self);
 
-	// discard all items in the list without freeing
+	// discard all iters in the list without freeing
 	// this is useful when the list just holds references
 	cc_listIter_t* iter = cc_list_head(self);
 	while(iter)
@@ -271,25 +271,25 @@ int cc_list_empty(const cc_list_t* self)
 	return self->size == 0;
 }
 
-const void* cc_list_peekhead(const cc_list_t* self)
+const void* cc_list_peekHead(const cc_list_t* self)
 {
 	assert(self);
 
 	return (self->size == 0) ? NULL : self->head->data;
 }
 
-const void* cc_list_peektail(const cc_list_t* self)
+const void* cc_list_peekTail(const cc_list_t* self)
 {
 	assert(self);
 
 	return (self->size == 0) ? NULL : self->tail->data;
 }
 
-const void* cc_list_peekitem(cc_listIter_t* item)
+const void* cc_list_peekIter(cc_listIter_t* iter)
 {
-	assert(item);
+	assert(iter);
 
-	return item->data;
+	return iter->data;
 }
 
 cc_listIter_t* cc_list_head(const cc_list_t* self)
@@ -306,18 +306,18 @@ cc_listIter_t* cc_list_tail(const cc_list_t* self)
 	return self->tail;
 }
 
-cc_listIter_t* cc_list_next(cc_listIter_t* item)
+cc_listIter_t* cc_list_next(cc_listIter_t* iter)
 {
-	assert(item);
+	assert(iter);
 
-	return item->next;
+	return iter->next;
 }
 
-cc_listIter_t* cc_list_prev(cc_listIter_t* item)
+cc_listIter_t* cc_list_prev(cc_listIter_t* iter)
 {
-	assert(item);
+	assert(iter);
 
-	return item->prev;
+	return iter->prev;
 }
 
 cc_listIter_t*
@@ -328,14 +328,14 @@ cc_list_find(const cc_list_t* self, const void* data,
 	assert(data);
 	assert(compare);
 
-	cc_listIter_t* item = self->head;
-	while(item)
+	cc_listIter_t* iter = self->head;
+	while(iter)
 	{
-		if((*compare)(item->data, data) == 0)
+		if((*compare)(iter->data, data) == 0)
 		{
-			return item;
+			return iter;
 		}
-		item = item->next;
+		iter = iter->next;
 	}
 	return NULL;
 }
@@ -348,36 +348,36 @@ cc_list_findSorted(const cc_list_t* self, const void* data,
 	assert(data);
 	assert(compare);
 
-	cc_listIter_t* item = self->head;
-	while(item)
+	cc_listIter_t* iter = self->head;
+	while(iter)
 	{
-		int cmp = (*compare)(data, item->data);
+		int cmp = (*compare)(data, iter->data);
 		if(cmp == 0)
 		{
-			return item;
+			return iter;
 		}
 		else if(cmp < 0)
 		{
 			return NULL;
 		}
-		item = item->next;
+		iter = iter->next;
 	}
 	return NULL;
 }
 
 cc_listIter_t*
-cc_list_insert(cc_list_t* self, cc_listIter_t* item,
+cc_list_insert(cc_list_t* self, cc_listIter_t* iter,
                const void* data)
 {
-	// item may be null for empty list or to insert at head
+	// iter may be null for empty list or to insert at head
 	// cc_list_insert(list, NULL, data) may be preferred over
 	// cc_list_push(list, data) when a listIter is needed
 	assert(self);
 	assert(data);
 
-	if(item)
+	if(iter)
 	{
-		return cc_listIter_new(self, item->prev, item, data);
+		return cc_listIter_new(self, iter->prev, iter, data);
 	}
 	else
 	{
@@ -393,34 +393,34 @@ cc_list_insertSorted(cc_list_t* self, cc_listcmp_fn compare,
 	assert(compare);
 	assert(data);
 
-	cc_listIter_t* item = cc_list_head(self);
-	while(item)
+	cc_listIter_t* iter = cc_list_head(self);
+	while(iter)
 	{
-		const void* d = cc_list_peekitem(item);
+		const void* d = cc_list_peekIter(iter);
 		if((*compare)(data, d) < 0)
 		{
-			return cc_list_insert(self, item, data);
+			return cc_list_insert(self, iter, data);
 		}
 
-		item = cc_list_next(item);
+		iter = cc_list_next(iter);
 	}
 
 	return cc_list_append(self, NULL, data);
 }
 
 cc_listIter_t*
-cc_list_append(cc_list_t* self, cc_listIter_t* item,
+cc_list_append(cc_list_t* self, cc_listIter_t* iter,
                const void* data)
 {
-	// item may be null for empty list or to append at tail
+	// iter may be null for empty list or to append at tail
 	// cc_list_append(list, NULL, data) may be preferred over
 	// cc_list_enqueue(list, data) when a listIter is needed
 	assert(self);
 	assert(data);
 
-	if(item)
+	if(iter)
 	{
-		return cc_listIter_new(self, item, item->next, data);
+		return cc_listIter_new(self, iter, iter->next, data);
 	}
 	else
 	{
@@ -429,26 +429,26 @@ cc_list_append(cc_list_t* self, cc_listIter_t* item,
 }
 
 const void*
-cc_list_replace(cc_list_t* self, cc_listIter_t* item,
+cc_list_replace(cc_list_t* self, cc_listIter_t* iter,
                 const void* data)
 {
 	assert(self);
-	assert(item);
+	assert(iter);
 	assert(data);
 
-	const void* tmp = item->data;
-	item->data = data;
+	const void* tmp = iter->data;
+	iter->data = data;
 
 	return tmp;
 }
 
 const void*
-cc_list_remove(cc_list_t* self, cc_listIter_t** _item)
+cc_list_remove(cc_list_t* self, cc_listIter_t** _iter)
 {
 	assert(self);
-	assert(_item);
+	assert(_iter);
 
-	return cc_listIter_delete(_item, self);
+	return cc_listIter_delete(_iter, self);
 }
 
 void cc_list_move(cc_list_t* self, cc_listIter_t* from,
@@ -501,9 +501,7 @@ void cc_list_swap(cc_list_t* fromList, cc_list_t* toList,
 
 	if(fromList == toList)
 	{
-		cc_list_move(fromList,
-		              from,
-		              to);
+		cc_list_move(fromList, from, to);
 		return;
 	}
 

@@ -63,7 +63,7 @@ pthread_mutex_t memory_mutex   = PTHREAD_MUTEX_INITIALIZER;
 cc_meminfo_t*   memory_meminfo = NULL;
 
 /***********************************************************
-* private - cc_ator                                      *
+* private - cc_ator                                        *
 ***********************************************************/
 
 static cc_ator_t*
@@ -145,7 +145,7 @@ cc_ator_rem(cc_ator_t* self, cc_pinfo_t* pinfo_ref)
 }
 
 /***********************************************************
-* private - cc_pinfo                                     *
+* private - cc_pinfo                                       *
 ***********************************************************/
 
 static cc_pinfo_t*
@@ -241,8 +241,7 @@ cc_meminfo_add(cc_meminfo_t* self,
 	cc_mapIter_t hiterator;
 	cc_ator_t* ator;
 	ator = (cc_ator_t*)
-	       cc_map_find(self->map_ator,
-                            &hiterator, name);
+	       cc_map_find(self->map_ator, &hiterator, name);
 	if(ator == NULL)
 	{
 		ator = cc_ator_new(name);
@@ -292,9 +291,8 @@ cc_meminfo_add(cc_meminfo_t* self,
 }
 
 static void
-cc_meminfo_rem(cc_meminfo_t* self,
-               const char* func, int line,
-               void* ptr)
+cc_meminfo_rem(cc_meminfo_t* self, const char* func,
+               int line, void* ptr)
 {
 	assert(self);
 	assert(func);

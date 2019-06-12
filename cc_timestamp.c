@@ -36,5 +36,6 @@ double cc_timestamp(void)
 {
 	struct timeval t;
 	gettimeofday(&t, NULL);
-	return (double) t.tv_sec + ((double) t.tv_usec)/1000000.0;
+	return (double) t.tv_sec +
+	       ((double) t.tv_usec)/1000000.0;
 }

@@ -114,7 +114,7 @@ static void* cc_workq_thread(void* arg)
 		cc_listIter_t*  iter;
 		cc_workqNode_t* node;
 		iter = cc_list_head(self->queue_pending);
-		node = (cc_workqNode_t*) cc_list_peekitem(iter);
+		node = (cc_workqNode_t*) cc_list_peekIter(iter);
 		cc_list_swapn(self->queue_pending,
 		              self->queue_active, iter, NULL);
 
@@ -350,7 +350,7 @@ void cc_workq_purge(cc_workq_t* self)
 	while(iter)
 	{
 		cc_workqNode_t* node;
-		node = (cc_workqNode_t*) cc_list_peekitem(iter);
+		node = (cc_workqNode_t*) cc_list_peekIter(iter);
 		if(node->purge_id != self->purge_id)
 		{
 			cc_list_remove(self->queue_pending, &iter);
@@ -369,7 +369,7 @@ void cc_workq_purge(cc_workq_t* self)
 	while(iter)
 	{
 		cc_workqNode_t* node;
-		node = (cc_workqNode_t*) cc_list_peekitem(iter);
+		node = (cc_workqNode_t*) cc_list_peekIter(iter);
 		if(node->purge_id != self->purge_id)
 		{
 			node->purge_id = CC_WORKQ_PURGE;
@@ -382,7 +382,7 @@ void cc_workq_purge(cc_workq_t* self)
 	while(iter)
 	{
 		cc_workqNode_t* node;
-		node = (cc_workqNode_t*) cc_list_peekitem(iter);
+		node = (cc_workqNode_t*) cc_list_peekIter(iter);
 		if((node->purge_id != self->purge_id) ||
 		   (node->purge_id == CC_WORKQ_PURGE))
 		{
@@ -432,14 +432,14 @@ int cc_workq_run(cc_workq_t* self, void* task,
 	else if((iter = cc_list_find(self->queue_active, task,
 	                             cc_taskcmp_fn)) != NULL)
 	{
-		node = (cc_workqNode_t*) cc_list_peekitem(iter);
+		node = (cc_workqNode_t*) cc_list_peekIter(iter);
 		node->purge_id = self->purge_id;
 		status = CC_WORKQ_PENDING;
 	}
 	else if((iter = cc_list_find(self->queue_pending, task,
 	                             cc_taskcmp_fn)) != NULL)
 	{
-		node = (cc_workqNode_t*) cc_list_peekitem(iter);
+		node = (cc_workqNode_t*) cc_list_peekIter(iter);
 		node->purge_id = self->purge_id;
 		if(priority > node->priority)
 		{
@@ -448,7 +448,7 @@ int cc_workq_run(cc_workq_t* self, void* task,
 			while(pos)
 			{
 				tmp = (cc_workqNode_t*)
-				      cc_list_peekitem(pos);
+				      cc_list_peekIter(pos);
 				if(tmp->priority >= node->priority)
 				{
 					break;
@@ -476,7 +476,7 @@ int cc_workq_run(cc_workq_t* self, void* task,
 			while(pos)
 			{
 				tmp = (cc_workqNode_t*)
-				      cc_list_peekitem(pos);
+				      cc_list_peekIter(pos);
 				if(tmp->priority < node->priority)
 				{
 					break;
@@ -516,7 +516,7 @@ int cc_workq_run(cc_workq_t* self, void* task,
 			while(pos)
 			{
 				tmp = (cc_workqNode_t*)
-				      cc_list_peekitem(pos);
+				      cc_list_peekIter(pos);
 				if(tmp->priority >= node->priority)
 				{
 					break;
@@ -619,24 +619,23 @@ int cc_workq_status(cc_workq_t* self, void* task)
 	pthread_mutex_lock(&self->mutex);
 
 	cc_listIter_t* iter;
-	iter = cc_list_find(self->queue_pending,
-	                    task, cc_taskcmp_fn);
+	iter = cc_list_find(self->queue_pending, task,
+	                    cc_taskcmp_fn);
 	if(iter == NULL)
 	{
-		iter = cc_list_find(self->queue_active,
-		                    task, cc_taskcmp_fn);
+		iter = cc_list_find(self->queue_active, task,
+		                    cc_taskcmp_fn);
 		if(iter == NULL)
 		{
-			iter = cc_list_find(self->queue_complete,
-			                    task, cc_taskcmp_fn);
+			iter = cc_list_find(self->queue_complete, task,
+			                    cc_taskcmp_fn);
 		}
 	}
 
 	if(iter)
 	{
 		cc_workqNode_t* node;
-		node = (cc_workqNode_t*)
-		       cc_list_peekitem(iter);
+		node = (cc_workqNode_t*) cc_list_peekIter(iter);
 		status = node->status;
 	}
 

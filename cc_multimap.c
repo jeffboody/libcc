@@ -41,8 +41,7 @@ cc_multimap_t* cc_multimap_new(cc_listcmp_fn compare)
 	// compare may be NULL
 
 	cc_multimap_t* self;
-	self = (cc_multimap_t*)
-	        MALLOC(sizeof(cc_multimap_t));
+	self = (cc_multimap_t*) MALLOC(sizeof(cc_multimap_t));
 	if(self == NULL)
 	{
 		LOGE("MALLOC failed");
@@ -120,8 +119,7 @@ cc_multimap_head(const cc_multimap_t* self,
 		return NULL;
 	}
 
-	cc_list_t* list = (cc_list_t*)
-	                  cc_map_val(iter->hiter);
+	cc_list_t* list = (cc_list_t*) cc_map_val(iter->hiter);
 	iter->item = cc_list_head(list);
 
 	return iter;
@@ -143,8 +141,7 @@ cc_multimapIter_t* cc_multimap_next(cc_multimapIter_t* iter)
 		return NULL;
 	}
 
-	cc_list_t* list = (cc_list_t*)
-	                  cc_map_val(iter->hiter);
+	cc_list_t* list = (cc_list_t*) cc_map_val(iter->hiter);
 	iter->item = cc_list_head(list);
 
 	return iter;
@@ -173,8 +170,7 @@ cc_multimapIter_t* cc_multimap_nextList(cc_multimapIter_t* iter)
 		return NULL;
 	}
 
-	cc_list_t* list = (cc_list_t*)
-	                  cc_map_val(iter->hiter);
+	cc_list_t* list = (cc_list_t*) cc_map_val(iter->hiter);
 	iter->item = cc_list_head(list);
 
 	return iter;
@@ -184,7 +180,7 @@ const void* cc_multimap_val(const cc_multimapIter_t* iter)
 {
 	assert(iter);
 
-	return cc_list_peekitem(iter->item);
+	return cc_list_peekIter(iter->item);
 }
 
 const cc_list_t*

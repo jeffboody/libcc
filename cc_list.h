@@ -30,12 +30,12 @@ typedef struct cc_listIter_s
 {
 	struct cc_listIter_s* next;
 	struct cc_listIter_s* prev;
-	const void*            data;
+	const void*           data;
 } cc_listIter_t;
 
 typedef struct
 {
-	int size;
+	int            size;
 	cc_listIter_t* head;
 	cc_listIter_t* tail;
 } cc_list_t;
@@ -46,13 +46,13 @@ void           cc_list_discard(cc_list_t* self);
 int            cc_list_size(const cc_list_t* self);
 size_t         cc_list_sizeof(const cc_list_t* self);
 int            cc_list_empty(const cc_list_t* self);
-const void*    cc_list_peekhead(const cc_list_t* self);
-const void*    cc_list_peektail(const cc_list_t* self);
-const void*    cc_list_peekitem(cc_listIter_t* item);
+const void*    cc_list_peekHead(const cc_list_t* self);
+const void*    cc_list_peekTail(const cc_list_t* self);
+const void*    cc_list_peekIter(cc_listIter_t* iter);
 cc_listIter_t* cc_list_head(const cc_list_t* self);
 cc_listIter_t* cc_list_tail(const cc_list_t* self);
-cc_listIter_t* cc_list_next(cc_listIter_t* item);
-cc_listIter_t* cc_list_prev(cc_listIter_t* item);
+cc_listIter_t* cc_list_next(cc_listIter_t* iter);
+cc_listIter_t* cc_list_prev(cc_listIter_t* iter);
 cc_listIter_t* cc_list_find(const cc_list_t* self,
                             const void* data,
                             cc_listcmp_fn compare);
@@ -60,19 +60,19 @@ cc_listIter_t* cc_list_findSorted(const cc_list_t* self,
                                   const void* data,
                                   cc_listcmp_fn compare);
 cc_listIter_t* cc_list_insert(cc_list_t* self,
-                              cc_listIter_t* item,
+                              cc_listIter_t* iter,
                               const void* data);
 cc_listIter_t* cc_list_insertSorted(cc_list_t* self,
                                     cc_listcmp_fn compare,
                                     const void* data);
 cc_listIter_t* cc_list_append(cc_list_t* self,
-                              cc_listIter_t* item,
+                              cc_listIter_t* iter,
                               const void* data);
 const void*    cc_list_replace(cc_list_t* self,
-                               cc_listIter_t* item,
+                               cc_listIter_t* iter,
                                const void* data);
 const void*    cc_list_remove(cc_list_t* self,
-                              cc_listIter_t** _item);
+                              cc_listIter_t** _iter);
 void           cc_list_move(cc_list_t* self,
                             cc_listIter_t* from,
                             cc_listIter_t* to);

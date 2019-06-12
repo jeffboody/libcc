@@ -52,7 +52,8 @@
 #endif
 
 // logging using Android "standard" macros
-void cc_log(const char* func, int line, int type, const char* tag, const char* fmt, ...);
+void cc_log(const char* func, int line, int type,
+            const char* tag, const char* fmt, ...);
 
 // tracing using Android Systrace
 void cc_trace_init(void);
