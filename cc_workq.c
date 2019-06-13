@@ -35,8 +35,8 @@
 ***********************************************************/
 
 // workq run state
-const int CC_WORKQ_RUNNING = 0;
-const int CC_WORKQ_STOP    = 1;
+const int CC_WORKQ_STATE_RUNNING = 0;
+const int CC_WORKQ_STATE_STOP    = 1;
 
 // force purge a task or workq
 const int CC_WORKQ_PURGE = -1;
@@ -55,7 +55,7 @@ cc_workqNode_new(void* task, int purge_id, int priority)
 		return NULL;
 	}
 
-	self->status   = CC_WORKQ_PENDING;
+	self->status   = CC_WORKQ_STATUS_PENDING;
 	self->priority = priority;
 	self->purge_id = purge_id;
 	self->task     = task;
@@ -97,13 +97,13 @@ static void* cc_workq_thread(void* arg)
 	{
 		// pending for an event
 		while((cc_list_size(self->queue_pending) == 0) &&
-		      (self->state == CC_WORKQ_RUNNING))
+		      (self->state == CC_WORKQ_STATE_RUNNING))
 		{
 			pthread_cond_wait(&self->cond_pending,
 			                  &self->mutex);
 		}
 
-		if(self->state == CC_WORKQ_STOP)
+		if(self->state == CC_WORKQ_STATE_STOP)
 		{
 			// stop condition
 			pthread_mutex_unlock(&self->mutex);
@@ -117,6 +117,7 @@ static void* cc_workq_thread(void* arg)
 		node = (cc_workqNode_t*) cc_list_peekIter(iter);
 		cc_list_swapn(self->queue_pending,
 		              self->queue_active, iter, NULL);
+		node->status = CC_WORKQ_STATUS_ACTIVE;
 
 		// wake another thread
 		// allows signal instead of broadcast for
@@ -129,13 +130,14 @@ static void* cc_workq_thread(void* arg)
 		pthread_mutex_unlock(&self->mutex);
 
 		// run the task
-		int status = (*self->run_fn)(tid, self->owner,
-		                             node->task);
+		int ret = (*self->run_fn)(tid, self->owner,
+		                          node->task);
 
 		pthread_mutex_lock(&self->mutex);
 
 		// put the task on the complete queue
-		node->status = status;
+		node->status = ret ? CC_WORKQ_STATUS_COMPLETE :
+		                     CC_WORKQ_STATUS_FAILURE;
 		cc_list_swapn(self->queue_active,
 		              self->queue_complete, iter, NULL);
 
@@ -166,7 +168,7 @@ cc_workq_new(void* owner, int thread_count,
 		return NULL;
 	}
 
-	self->state        = CC_WORKQ_RUNNING;
+	self->state        = CC_WORKQ_STATE_RUNNING;
 	self->owner        = owner;
 	self->purge_id     = 0;
 	self->thread_count = thread_count;
@@ -240,7 +242,7 @@ cc_workq_new(void* owner, int thread_count,
 
 	// fail
 	fail_pthread_create:
-		self->state = CC_WORKQ_STOP;
+		self->state = CC_WORKQ_STATE_STOP;
 		pthread_mutex_unlock(&self->mutex);
 
 		int j;
@@ -277,7 +279,7 @@ void cc_workq_delete(cc_workq_t** _self)
 		pthread_mutex_lock(&self->mutex);
 
 		// stop the workq thread
-		self->state = CC_WORKQ_STOP;
+		self->state = CC_WORKQ_STATE_STOP;
 		pthread_cond_broadcast(&self->cond_pending);
 		pthread_mutex_unlock(&self->mutex);
 		int i;
@@ -415,7 +417,7 @@ int cc_workq_run(cc_workq_t* self, void* task,
 	pthread_mutex_lock(&self->mutex);
 
 	// find the node containing the task or create a new one
-	int status = CC_WORKQ_ERROR;
+	int status = CC_WORKQ_STATUS_ERROR;
 	cc_listIter_t*  iter = NULL;
 	cc_listIter_t*  pos  = NULL;
 	cc_workqNode_t* tmp  = NULL;
@@ -434,7 +436,7 @@ int cc_workq_run(cc_workq_t* self, void* task,
 	{
 		node = (cc_workqNode_t*) cc_list_peekIter(iter);
 		node->purge_id = self->purge_id;
-		status = CC_WORKQ_PENDING;
+		status = node->status;
 	}
 	else if((iter = cc_list_find(self->queue_pending, task,
 	                             cc_taskcmp_fn)) != NULL)
@@ -498,7 +500,7 @@ int cc_workq_run(cc_workq_t* self, void* task,
 			}
 		}
 		node->priority = priority;
-		status = CC_WORKQ_PENDING;
+		status = node->status;
 	}
 	else
 	{
@@ -509,46 +511,44 @@ int cc_workq_run(cc_workq_t* self, void* task,
 		{
 			goto fail_node;
 		}
+
+		// find the insert position
+		pos = cc_list_tail(self->queue_pending);
+		while(pos)
+		{
+			tmp = (cc_workqNode_t*)
+			      cc_list_peekIter(pos);
+			if(tmp->priority >= node->priority)
+			{
+				break;
+			}
+			pos = cc_list_prev(pos);
+		}
+
+		if(pos)
+		{
+			// append after pos
+			if(cc_list_append(self->queue_pending, pos,
+			                  (const void*) node) == NULL)
+			{
+				goto fail_queue;
+			}
+		}
 		else
 		{
-			// find the insert position
-			pos = cc_list_tail(self->queue_pending);
-			while(pos)
+			// insert at head of queue
+			// first item or highest priority
+			if(cc_list_insert(self->queue_pending, NULL,
+			                  (const void*) node) == NULL)
 			{
-				tmp = (cc_workqNode_t*)
-				      cc_list_peekIter(pos);
-				if(tmp->priority >= node->priority)
-				{
-					break;
-				}
-				pos = cc_list_prev(pos);
+				goto fail_queue;
 			}
-
-			if(pos)
-			{
-				// append after pos
-				if(cc_list_append(self->queue_pending, pos,
-				                  (const void*) node) == NULL)
-				{
-					goto fail_queue;
-				}
-			}
-			else
-			{
-				// insert at head of queue
-				// first item or highest priority
-				if(cc_list_insert(self->queue_pending, NULL,
-				                  (const void*) node) == NULL)
-				{
-					goto fail_queue;
-				}
-			}
-
-			status = CC_WORKQ_PENDING;
-
-			// wake up workq thread
-			pthread_cond_signal(&self->cond_pending);
 		}
+
+		status = node->status;
+
+		// wake up workq thread
+		pthread_cond_signal(&self->cond_pending);
 	}
 
 	pthread_mutex_unlock(&self->mutex);
@@ -561,7 +561,7 @@ int cc_workq_run(cc_workq_t* self, void* task,
 		cc_workqNode_delete(&node);
 	fail_node:
 		pthread_mutex_unlock(&self->mutex);
-	return CC_WORKQ_ERROR;
+	return CC_WORKQ_STATUS_ERROR;
 }
 
 int cc_workq_cancel(cc_workq_t* self, void* task,
@@ -570,7 +570,7 @@ int cc_workq_cancel(cc_workq_t* self, void* task,
 	assert(self);
 	assert(task);
 
-	int status = CC_WORKQ_ERROR;
+	int status = CC_WORKQ_STATUS_ERROR;
 	pthread_mutex_lock(&self->mutex);
 
 	cc_listIter_t* iter;
@@ -626,7 +626,7 @@ int cc_workq_status(cc_workq_t* self, void* task)
 	assert(self);
 	assert(task);
 
-	int status = CC_WORKQ_ERROR;
+	int status = CC_WORKQ_STATUS_ERROR;
 	pthread_mutex_lock(&self->mutex);
 
 	cc_listIter_t* iter;

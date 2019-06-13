@@ -28,10 +28,12 @@
 
 #include "cc_list.h"
 
-// task status
-#define CC_WORKQ_ERROR    0
-#define CC_WORKQ_COMPLETE 1
-#define CC_WORKQ_PENDING  2
+// workq status
+#define CC_WORKQ_STATUS_ERROR    0
+#define CC_WORKQ_STATUS_PENDING  1
+#define CC_WORKQ_STATUS_ACTIVE   2
+#define CC_WORKQ_STATUS_COMPLETE 3
+#define CC_WORKQ_STATUS_FAILURE  4
 
 // called from the workq thread
 typedef int (*cc_workqRun_fn)(int tid,
