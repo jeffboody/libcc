@@ -55,7 +55,6 @@ void          cc_map_delete(cc_map_t** _self);
 void          cc_map_discard(cc_map_t* self);
 int           cc_map_size(const cc_map_t* self);
 size_t        cc_map_sizeof(const cc_map_t* self);
-int           cc_map_empty(const cc_map_t* self);
 cc_mapIter_t* cc_map_head(const cc_map_t* self,
                           cc_mapIter_t* iter);
 cc_mapIter_t* cc_map_next(cc_mapIter_t* iter);

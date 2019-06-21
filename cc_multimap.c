@@ -99,13 +99,6 @@ size_t cc_multimap_sizeof(const cc_multimap_t* self)
 	return sizeof(cc_multimap_t) + cc_map_sizeof(self->map);
 }
 
-int cc_multimap_empty(const cc_multimap_t* self)
-{
-	assert(self);
-
-	return cc_map_empty(self->map);
-}
-
 cc_multimapIter_t*
 cc_multimap_head(const cc_multimap_t* self,
                  cc_multimapIter_t* iter)
@@ -354,7 +347,7 @@ cc_multimap_remove(cc_multimap_t* self,
 
 	// check if list is empty
 	// or if next item is NULL
-	if(cc_list_empty(list))
+	if(cc_list_size(list) == 0)
 	{
 		cc_map_remove(self->map, &iter->hiter);
 		cc_list_delete(&list);

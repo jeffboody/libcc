@@ -45,7 +45,6 @@ void               cc_multimap_delete(cc_multimap_t** _self);
 void               cc_multimap_discard(cc_multimap_t* self);
 int                cc_multimap_size(const cc_multimap_t* self);
 size_t             cc_multimap_sizeof(const cc_multimap_t* self);
-int                cc_multimap_empty(const cc_multimap_t* self);
 cc_multimapIter_t* cc_multimap_head(const cc_multimap_t* self,
                                     cc_multimapIter_t* iter);
 cc_multimapIter_t* cc_multimap_next(cc_multimapIter_t* iter);

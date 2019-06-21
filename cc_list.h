@@ -45,7 +45,6 @@ void           cc_list_delete(cc_list_t** _self);
 void           cc_list_discard(cc_list_t* self);
 int            cc_list_size(const cc_list_t* self);
 size_t         cc_list_sizeof(const cc_list_t* self);
-int            cc_list_empty(const cc_list_t* self);
 const void*    cc_list_peekHead(const cc_list_t* self);
 const void*    cc_list_peekTail(const cc_list_t* self);
 const void*    cc_list_peekIter(cc_listIter_t* iter);

@@ -217,13 +217,6 @@ size_t cc_map_sizeof(const cc_map_t* self)
 	       self->nodes*sizeof(cc_mapNode_t);
 }
 
-int cc_map_empty(const cc_map_t* self)
-{
-	assert(self);
-
-	return self->size ? 0 : 1;
-}
-
 cc_mapIter_t*
 cc_map_head(const cc_map_t* self, cc_mapIter_t* iter)
 {

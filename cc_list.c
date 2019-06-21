@@ -264,13 +264,6 @@ size_t cc_list_sizeof(const cc_list_t* self)
 	       self->size*sizeof(cc_listIter_t);
 }
 
-int cc_list_empty(const cc_list_t* self)
-{
-	assert(self);
-
-	return self->size == 0;
-}
-
 const void* cc_list_peekHead(const cc_list_t* self)
 {
 	assert(self);
