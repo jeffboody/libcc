@@ -58,12 +58,12 @@ cc_listIter_t* cc_list_find(const cc_list_t* self,
 cc_listIter_t* cc_list_findSorted(const cc_list_t* self,
                                   const void* data,
                                   cc_listcmp_fn compare);
-cc_listIter_t* cc_list_insert(cc_list_t* self,
-                              cc_listIter_t* iter,
-                              const void* data);
 cc_listIter_t* cc_list_insertSorted(cc_list_t* self,
                                     cc_listcmp_fn compare,
                                     const void* data);
+cc_listIter_t* cc_list_insert(cc_list_t* self,
+                              cc_listIter_t* iter,
+                              const void* data);
 cc_listIter_t* cc_list_append(cc_list_t* self,
                               cc_listIter_t* iter,
                               const void* data);

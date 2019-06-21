@@ -359,26 +359,6 @@ cc_list_findSorted(const cc_list_t* self, const void* data,
 }
 
 cc_listIter_t*
-cc_list_insert(cc_list_t* self, cc_listIter_t* iter,
-               const void* data)
-{
-	// iter may be null for empty list or to insert at head
-	// cc_list_insert(list, NULL, data) may be preferred over
-	// cc_list_push(list, data) when a listIter is needed
-	assert(self);
-	assert(data);
-
-	if(iter)
-	{
-		return cc_listIter_new(self, iter->prev, iter, data);
-	}
-	else
-	{
-		return cc_listIter_new(self, NULL, self->head, data);
-	}
-}
-
-cc_listIter_t*
 cc_list_insertSorted(cc_list_t* self, cc_listcmp_fn compare,
                      const void* data)
 {
@@ -399,6 +379,26 @@ cc_list_insertSorted(cc_list_t* self, cc_listcmp_fn compare,
 	}
 
 	return cc_list_append(self, NULL, data);
+}
+
+cc_listIter_t*
+cc_list_insert(cc_list_t* self, cc_listIter_t* iter,
+               const void* data)
+{
+	// iter may be null for empty list or to insert at head
+	// cc_list_insert(list, NULL, data) may be preferred over
+	// cc_list_push(list, data) when a listIter is needed
+	assert(self);
+	assert(data);
+
+	if(iter)
+	{
+		return cc_listIter_new(self, iter->prev, iter, data);
+	}
+	else
+	{
+		return cc_listIter_new(self, NULL, self->head, data);
+	}
 }
 
 cc_listIter_t*
