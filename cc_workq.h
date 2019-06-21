@@ -40,10 +40,11 @@ typedef int (*cc_workqRun_fn)(int tid,
                               void* owner,
                               void* task);
 
-// called from main thread by purge or delete
-typedef void (*cc_workqPurge_fn)(void* owner,
-                                 void* task,
-                                 int status);
+// called from main thread by
+// reset, purge, flush, finish or delete
+typedef void (*cc_workqFinish_fn)(void* owner,
+                                  void* task,
+                                  int status);
 
 typedef struct
 {
@@ -66,8 +67,8 @@ typedef struct
 	cc_list_t* queue_active;
 
 	// callbacks
-	cc_workqRun_fn   run_fn;
-	cc_workqPurge_fn purge_fn;
+	cc_workqRun_fn    run_fn;
+	cc_workqFinish_fn finish_fn;
 
 	// workq thread(s)
 	int             thread_count;
@@ -80,10 +81,12 @@ typedef struct
 
 cc_workq_t* cc_workq_new(void* owner, int thread_count,
                          cc_workqRun_fn run_fn,
-                         cc_workqPurge_fn purge_fn);
+                         cc_workqFinish_fn finish_fn);
 void        cc_workq_delete(cc_workq_t** _self);
 void        cc_workq_reset(cc_workq_t* self, int blocking);
 void        cc_workq_purge(cc_workq_t* self);
+void        cc_workq_flush(cc_workq_t* self);
+void        cc_workq_finish(cc_workq_t* self);
 int         cc_workq_run(cc_workq_t* self, void* task,
                          int priority);
 int         cc_workq_cancel(cc_workq_t* self, void* task,

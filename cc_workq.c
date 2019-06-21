@@ -146,6 +146,22 @@ static void* cc_workq_thread(void* arg)
 		pthread_cond_signal(&self->cond_complete);
 	}
 }
+static void cc_workq_flushLocked(cc_workq_t* self)
+{
+	assert(self);
+
+	cc_listIter_t* iter;
+	iter = cc_list_head(self->queue_complete);
+	while(iter)
+	{
+		cc_workqNode_t* node;
+		node = (cc_workqNode_t*)
+		       cc_list_remove(self->queue_complete, &iter);
+		(*self->finish_fn)(self->owner, node->task,
+		                   node->status);
+		cc_workqNode_delete(&node);
+	}
+}
 
 /***********************************************************
 * public                                                   *
@@ -154,11 +170,11 @@ static void* cc_workq_thread(void* arg)
 cc_workq_t*
 cc_workq_new(void* owner, int thread_count,
              cc_workqRun_fn run_fn,
-             cc_workqPurge_fn purge_fn)
+             cc_workqFinish_fn finish_fn)
 {
 	// owner may be NULL
 	assert(run_fn);
-	assert(purge_fn);
+	assert(finish_fn);
 
 	cc_workq_t* self;
 	self = (cc_workq_t*) MALLOC(sizeof(cc_workq_t));
@@ -174,7 +190,7 @@ cc_workq_new(void* owner, int thread_count,
 	self->thread_count = thread_count;
 	self->next_tid     = 0;
 	self->run_fn       = run_fn;
-	self->purge_fn     = purge_fn;
+	self->finish_fn    = finish_fn;
 
 	// PTHREAD_MUTEX_DEFAULT is not re-entrant
 	if(pthread_mutex_init(&self->mutex, NULL) != 0)
@@ -356,8 +372,8 @@ void cc_workq_purge(cc_workq_t* self)
 		if(node->purge_id != self->purge_id)
 		{
 			cc_list_remove(self->queue_pending, &iter);
-			(*self->purge_fn)(self->owner, node->task,
-			                  node->status);
+			(*self->finish_fn)(self->owner, node->task,
+			                   node->status);
 			cc_workqNode_delete(&node);
 		}
 		else
@@ -389,8 +405,8 @@ void cc_workq_purge(cc_workq_t* self)
 		   (node->purge_id == CC_WORKQ_PURGE))
 		{
 			cc_list_remove(self->queue_complete, &iter);
-			(*self->purge_fn)(self->owner, node->task,
-			                  node->status);
+			(*self->finish_fn)(self->owner, node->task,
+			                   node->status);
 			cc_workqNode_delete(&node);
 		}
 		else
@@ -403,6 +419,45 @@ void cc_workq_purge(cc_workq_t* self)
 	if(self->purge_id != CC_WORKQ_PURGE)
 	{
 		self->purge_id = 1 - self->purge_id;
+	}
+
+	pthread_mutex_unlock(&self->mutex);
+}
+
+void cc_workq_flush(cc_workq_t* self)
+{
+	assert(self);
+
+	pthread_mutex_lock(&self->mutex);
+	cc_workq_flushLocked(self);
+	pthread_mutex_unlock(&self->mutex);
+}
+
+void cc_workq_finish(cc_workq_t* self)
+{
+	assert(self);
+
+	pthread_mutex_lock(&self->mutex);
+
+	while(1)
+	{
+		if(cc_list_size(self->queue_complete))
+		{
+			// flush any tasks which have completed
+			cc_workq_flushLocked(self);
+		}
+
+		if(cc_list_size(self->queue_pending) ||
+		   cc_list_size(self->queue_active))
+		{
+			// wait for pending/active tasks to complete
+			pthread_cond_wait(&self->cond_complete,
+			                  &self->mutex);
+		}
+		else
+		{
+			break;
+		}
 	}
 
 	pthread_mutex_unlock(&self->mutex);
