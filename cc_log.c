@@ -35,7 +35,9 @@
 // Android Systrace
 // open trace with chrome://tracing
 // systrace.py --time=10 -o trace.html gfx sched freq idle load -a <PACKAGE>
-int g_trace_fd = -1;
+#ifdef ANDROID
+static int g_trace_fd = -1;
+#endif
 
 void cc_log(const char* func, int line, int type,
             const char* tag, const char* fmt, ...)
