@@ -62,7 +62,7 @@ cc_orientation_update(cc_orientation_t* self, int slerp)
 	cc_vec3f_normalize(&y);
 
 	cc_mat4f_t m;
-	if(self->m_north == A3D_ORIENTATION_TRUE)
+	if(self->m_north == CC_ORIENTATION_TRUE)
 	{
 		// load the rotation matrix
 		cc_mat4f_t r;
@@ -176,7 +176,7 @@ cc_orientation_t* cc_orientation_new(void)
 		return NULL;
 	}
 
-	self->m_north = A3D_ORIENTATION_TRUE;
+	self->m_north = CC_ORIENTATION_TRUE;
 	cc_orientation_reset(self);
 
 	return self;

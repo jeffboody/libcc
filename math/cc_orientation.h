@@ -27,8 +27,8 @@
 #include "cc_mat4f.h"
 #include "cc_quaternion.h"
 
-#define A3D_ORIENTATION_TRUE     0
-#define A3D_ORIENTATION_MAGNETIC 1
+#define CC_ORIENTATION_TRUE     0
+#define CC_ORIENTATION_MAGNETIC 1
 
 typedef struct
 {
