@@ -27,11 +27,78 @@
 
 #define LOG_TAG "cc"
 #include "../cc_log.h"
-#include "cc_rect2f.h"
+#include "cc_rect12f.h"
 
 /***********************************************************
 * public                                                   *
 ***********************************************************/
+
+void cc_rect1f_init(cc_rect1f_t* self,
+                    float t, float l, float w, float h)
+{
+	assert(self);
+
+	self->t = t;
+	self->l = l;
+	self->w = w;
+	self->h = h;
+}
+
+void cc_rect1f_copy(const cc_rect1f_t* self,
+                    cc_rect1f_t* copy)
+{
+	assert(self);
+	assert(copy);
+
+	copy->t = self->t;
+	copy->l = self->l;
+	copy->w = self->w;
+	copy->h = self->h;
+}
+
+void cc_rect1f_copy2f(const cc_rect1f_t* self,
+                      cc_rect2f_t* copy)
+{
+	assert(self);
+	assert(copy);
+
+	copy->t = self->t;
+	copy->l = self->l;
+	copy->b = self->t + self->h;
+	copy->r = self->l + self->w;
+}
+
+int cc_rect1f_contains(const cc_rect1f_t* self,
+                       float x, float y)
+{
+	assert(self);
+
+	cc_rect2f_t rect;
+	cc_rect1f_copy2f(self, &rect);
+	return cc_rect2f_contains(&rect, x, y);
+}
+
+int cc_rect1f_intersect(const cc_rect1f_t* a,
+                        const cc_rect1f_t* b,
+                        cc_rect1f_t* c)
+{
+	assert(a);
+	assert(b);
+	assert(c);
+
+	cc_rect2f_t a2;
+	cc_rect2f_t b2;
+	cc_rect2f_t c2;
+	cc_rect1f_copy2f(a, &a2);
+	cc_rect1f_copy2f(b, &b2);
+	if(cc_rect2f_intersect(&a2, &b2, &c2))
+	{
+		cc_rect2f_copy1f(&c2, c);
+		return 1;
+	}
+
+	return 0;
+}
 
 void cc_rect2f_init(cc_rect2f_t* self,
                     float t, float l, float b, float r)
@@ -54,6 +121,18 @@ void cc_rect2f_copy(const cc_rect2f_t* self,
 	copy->l = self->l;
 	copy->b = self->b;
 	copy->r = self->r;
+}
+
+void cc_rect2f_copy1f(const cc_rect2f_t* self,
+                      cc_rect1f_t* copy)
+{
+	assert(self);
+	assert(copy);
+
+	copy->t = self->t;
+	copy->l = self->l;
+	copy->w = self->r - self->l;
+	copy->h = self->b - self->t;
 }
 
 int cc_rect2f_contains(const cc_rect2f_t* self,

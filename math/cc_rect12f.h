@@ -21,8 +21,16 @@
  *
  */
 
-#ifndef cc_rect2f_H
-#define cc_rect2f_H
+#ifndef cc_rect12f_H
+#define cc_rect12f_H
+
+typedef struct
+{
+	float t;
+	float l;
+	float w;
+	float h;
+} cc_rect1f_t;
 
 typedef struct
 {
@@ -32,11 +40,26 @@ typedef struct
 	float r;
 } cc_rect2f_t;
 
+void cc_rect1f_init(cc_rect1f_t* self,
+                    float t, float l,
+                    float w, float h);
+void cc_rect1f_copy(const cc_rect1f_t* self,
+                    cc_rect1f_t* copy);
+void cc_rect1f_copy2f(const cc_rect1f_t* self,
+                      cc_rect2f_t* copy);
+int  cc_rect1f_contains(const cc_rect1f_t* self,
+                        float x, float y);
+int cc_rect1f_intersect(const cc_rect1f_t* a,
+                        const cc_rect1f_t* b,
+                        cc_rect1f_t* c);
+
 void cc_rect2f_init(cc_rect2f_t* self,
                     float t, float l,
                     float b, float r);
 void cc_rect2f_copy(const cc_rect2f_t* self,
                     cc_rect2f_t* copy);
+void cc_rect2f_copy1f(const cc_rect2f_t* self,
+                      cc_rect1f_t* copy);
 int  cc_rect2f_contains(const cc_rect2f_t* self,
                         float x, float y);
 int cc_rect2f_intersect(const cc_rect2f_t* a,
