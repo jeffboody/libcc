@@ -16,6 +16,7 @@ ifeq ($(CC_USE_MATH),1)
 		math/cc_fplane      \
 		math/cc_ray         \
 		math/cc_sphere      \
+		math/cc_stack4f     \
 		math/cc_rect12f     \
 		math/cc_mat3f       \
 		math/cc_mat4f       \

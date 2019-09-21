@@ -11,7 +11,8 @@ if(CC_USE_MATH)
         math/cc_fplane.c
         math/cc_ray.c
         math/cc_sphere.c
-        math/cc_rect2f.c
+        math/cc_stack4f.c
+        math/cc_rect12f.c
         math/cc_mat3f.c
         math/cc_mat4f.c
         math/cc_vec2f.c
