@@ -97,6 +97,7 @@ int cc_rect1f_intersect(const cc_rect1f_t* a,
 		return 1;
 	}
 
+	cc_rect1f_init(c, 0.0f, 0.0f, 0.0f, 0.0f);
 	return 0;
 }
 
@@ -192,6 +193,7 @@ int cc_rect2f_intersect(const cc_rect2f_t* a,
 	// check if a and b rects intersect
 	if((at <= bb) || (ab >= bt) || (al >= br) || (ar <= bl))
 	{
+		cc_rect2f_init(c, 0.0f, 0.0f, 0.0f, 0.0f);
 		return 0;
 	}
 
