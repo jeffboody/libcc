@@ -27,6 +27,7 @@
 #include <pthread.h>
 
 #include "cc_list.h"
+#include "cc_map.h"
 
 // workq status
 #define CC_WORKQ_STATUS_ERROR    0
@@ -60,6 +61,9 @@ typedef struct
 	int   state;
 	void* owner;
 	int   purge_id;
+
+	// maps from task to listIter
+	cc_map_t* map_task;
 
 	// queues
 	cc_list_t* queue_pending;

@@ -75,13 +75,27 @@ static void cc_workqNode_delete(cc_workqNode_t** _self)
 	}
 }
 
-static int cc_taskcmp_fn(const void *a, const void *b)
+static void
+cc_workq_removeLocked(cc_workq_t* self, int finish,
+                      cc_list_t* queue, cc_listIter_t** _iter)
 {
-	assert(a);
-	assert(b);
+	assert(self);
+	assert(queue);
+	assert(_iter);
 
-	cc_workqNode_t* node = (cc_workqNode_t*) a;
-	return (node->task == b) ? 0 : 1;
+	cc_workqNode_t* node;
+	cc_mapIter_t    miterator;
+	cc_mapIter_t*   miter = &miterator;
+	node = (cc_workqNode_t*) cc_list_remove(queue, _iter);
+	cc_map_findf(self->map_task, miter, "%p", node->task);
+	cc_map_remove(self->map_task, &miter);
+
+	if(finish)
+	{
+		(*self->finish_fn)(self->owner, node->task, node->status);
+	}
+
+	cc_workqNode_delete(&node);
 }
 
 static void* cc_workq_thread(void* arg)
@@ -154,12 +168,8 @@ static void cc_workq_flushLocked(cc_workq_t* self)
 	iter = cc_list_head(self->queue_complete);
 	while(iter)
 	{
-		cc_workqNode_t* node;
-		node = (cc_workqNode_t*)
-		       cc_list_remove(self->queue_complete, &iter);
-		(*self->finish_fn)(self->owner, node->task,
-		                   node->status);
-		cc_workqNode_delete(&node);
+		cc_workq_removeLocked(self, 1, self->queue_complete,
+		                      &iter);
 	}
 }
 
@@ -209,6 +219,12 @@ cc_workq_new(void* owner, int thread_count,
 	{
 		LOGE("pthread_cond_init failed");
 		goto fail_cond_complete;
+	}
+
+	self->map_task = cc_map_new();
+	if(self->map_task == NULL)
+	{
+		goto fail_map_task;
 	}
 
 	self->queue_pending = cc_list_new();
@@ -274,6 +290,8 @@ cc_workq_new(void* owner, int thread_count,
 	fail_queue_complete:
 		cc_list_delete(&self->queue_pending);
 	fail_queue_pending:
+		cc_map_delete(&self->map_task);
+	fail_map_task:
 		pthread_cond_destroy(&self->cond_complete);
 	fail_cond_complete:
 		pthread_cond_destroy(&self->cond_pending);
@@ -313,6 +331,7 @@ void cc_workq_delete(cc_workq_t** _self)
 		cc_list_delete(&self->queue_active);
 		cc_list_delete(&self->queue_complete);
 		cc_list_delete(&self->queue_pending);
+		cc_map_delete(&self->map_task);
 
 		// destroy the thread state
 		pthread_cond_destroy(&self->cond_complete);
@@ -371,10 +390,8 @@ void cc_workq_purge(cc_workq_t* self)
 		node = (cc_workqNode_t*) cc_list_peekIter(iter);
 		if(node->purge_id != self->purge_id)
 		{
-			cc_list_remove(self->queue_pending, &iter);
-			(*self->finish_fn)(self->owner, node->task,
-			                   node->status);
-			cc_workqNode_delete(&node);
+			cc_workq_removeLocked(self, 1, self->queue_pending,
+			                      &iter);
 		}
 		else
 		{
@@ -404,10 +421,8 @@ void cc_workq_purge(cc_workq_t* self)
 		if((node->purge_id != self->purge_id) ||
 		   (node->purge_id == CC_WORKQ_PURGE))
 		{
-			cc_list_remove(self->queue_complete, &iter);
-			(*self->finish_fn)(self->owner, node->task,
-			                   node->status);
-			cc_workqNode_delete(&node);
+			cc_workq_removeLocked(self, 1, self->queue_complete,
+			                      &iter);
 		}
 		else
 		{
@@ -471,30 +486,85 @@ int cc_workq_run(cc_workq_t* self, void* task,
 
 	pthread_mutex_lock(&self->mutex);
 
-	// find the node containing the task or create a new one
 	int status = CC_WORKQ_STATUS_ERROR;
-	cc_listIter_t*  iter = NULL;
-	cc_listIter_t*  pos  = NULL;
-	cc_workqNode_t* tmp  = NULL;
-	cc_workqNode_t* node = NULL;
-	if((iter = cc_list_find(self->queue_complete, task,
-	                        cc_taskcmp_fn)) != NULL)
+
+	// find the node containing the task or create a new one
+	cc_listIter_t*  iter;
+	cc_mapIter_t    miterator;
+	cc_mapIter_t*   miter = &miterator;
+	cc_workqNode_t* node;
+	cc_listIter_t*  pos;
+	cc_workqNode_t* tmp;
+	iter = (cc_listIter_t*)
+	       cc_map_findf(self->map_task, miter, "%p", task);
+	if(iter == NULL)
 	{
-		// task completed
-		node = (cc_workqNode_t*)
-		       cc_list_remove(self->queue_complete, &iter);
+		// create new node
+		node = cc_workqNode_new(task, self->purge_id,
+		                        priority);
+		if(node == NULL)
+		{
+			goto fail_node;
+		}
+
+		// find the insert position
+		pos = cc_list_tail(self->queue_pending);
+		while(pos)
+		{
+			tmp = (cc_workqNode_t*)
+			      cc_list_peekIter(pos);
+			if(tmp->priority >= node->priority)
+			{
+				break;
+			}
+			pos = cc_list_prev(pos);
+		}
+
+		if(pos)
+		{
+			// append after pos
+			iter = cc_list_append(self->queue_pending, pos,
+			                      (const void*) node);
+			if(iter == NULL)
+			{
+				goto fail_queue;
+			}
+		}
+		else
+		{
+			// insert at head of queue
+			// first item or highest priority
+			iter = cc_list_insert(self->queue_pending, NULL,
+			                      (const void*) node);
+			if(iter == NULL)
+			{
+				goto fail_queue;
+			}
+		}
+
+		if(cc_map_addf(self->map_task, (const void*) iter,
+		               "%p", task) == 0)
+		{
+			goto fail_map_add;
+		}
+
 		status = node->status;
-		cc_workqNode_delete(&node);
+
+		// wake up workq thread
+		pthread_cond_signal(&self->cond_pending);
 	}
-	else if((iter = cc_list_find(self->queue_active, task,
-	                             cc_taskcmp_fn)) != NULL)
+	else
+	{
+		node = (cc_workqNode_t*) cc_list_peekIter(iter);
+	}
+
+	if(node->status == CC_WORKQ_STATUS_ACTIVE)
 	{
 		node = (cc_workqNode_t*) cc_list_peekIter(iter);
 		node->purge_id = self->purge_id;
 		status = node->status;
 	}
-	else if((iter = cc_list_find(self->queue_pending, task,
-	                             cc_taskcmp_fn)) != NULL)
+	else if(node->status == CC_WORKQ_STATUS_PENDING)
 	{
 		node = (cc_workqNode_t*) cc_list_peekIter(iter);
 		node->purge_id = self->purge_id;
@@ -559,51 +629,10 @@ int cc_workq_run(cc_workq_t* self, void* task,
 	}
 	else
 	{
-		// create new node
-		node = cc_workqNode_new(task, self->purge_id,
-		                        priority);
-		if(node == NULL)
-		{
-			goto fail_node;
-		}
-
-		// find the insert position
-		pos = cc_list_tail(self->queue_pending);
-		while(pos)
-		{
-			tmp = (cc_workqNode_t*)
-			      cc_list_peekIter(pos);
-			if(tmp->priority >= node->priority)
-			{
-				break;
-			}
-			pos = cc_list_prev(pos);
-		}
-
-		if(pos)
-		{
-			// append after pos
-			if(cc_list_append(self->queue_pending, pos,
-			                  (const void*) node) == NULL)
-			{
-				goto fail_queue;
-			}
-		}
-		else
-		{
-			// insert at head of queue
-			// first item or highest priority
-			if(cc_list_insert(self->queue_pending, NULL,
-			                  (const void*) node) == NULL)
-			{
-				goto fail_queue;
-			}
-		}
-
+		node = (cc_workqNode_t*) cc_list_peekIter(iter);
 		status = node->status;
-
-		// wake up workq thread
-		pthread_cond_signal(&self->cond_pending);
+		cc_workq_removeLocked(self, 0, self->queue_complete,
+		                      &iter);
 	}
 
 	pthread_mutex_unlock(&self->mutex);
@@ -612,6 +641,8 @@ int cc_workq_run(cc_workq_t* self, void* task,
 	return status;
 
 	// failure
+	fail_map_add:
+		cc_list_remove(self->queue_pending, &iter);
 	fail_queue:
 		cc_workqNode_delete(&node);
 	fail_node:
@@ -626,50 +657,47 @@ int cc_workq_cancel(cc_workq_t* self, void* task,
 	assert(task);
 
 	int status = CC_WORKQ_STATUS_ERROR;
+
 	pthread_mutex_lock(&self->mutex);
 
-	cc_listIter_t* iter;
-	if((iter = cc_list_find(self->queue_pending, task,
-	                        cc_taskcmp_fn)) != NULL)
+	// find task in map
+	cc_listIter_t*  iter;
+	cc_mapIter_t    miterator;
+	cc_mapIter_t*   miter = &miterator;
+	iter = (cc_listIter_t*)
+	       cc_map_findf(self->map_task, miter, "%p", task);
+	if(iter == NULL)
+	{
+		pthread_mutex_unlock(&self->mutex);
+		return status;
+	}
+
+	cc_workqNode_t* node;
+	node = (cc_workqNode_t*) cc_list_peekIter(iter);
+	while(node->status == CC_WORKQ_STATUS_ACTIVE)
+	{
+		if(blocking == 0)
+		{
+			pthread_mutex_unlock(&self->mutex);
+			return node->status;
+		}
+
+		// must wait for active task to complete
+		pthread_cond_wait(&self->cond_complete, &self->mutex);
+	}
+
+	status = node->status;
+	if(status == CC_WORKQ_STATUS_PENDING)
 	{
 		// cancel pending task
-		cc_workqNode_t* node;
-		node = (cc_workqNode_t*)
-		       cc_list_remove(self->queue_pending, &iter);
-		status = node->status;
-		cc_workqNode_delete(&node);
+		cc_workq_removeLocked(self, 0, self->queue_pending,
+		                      &iter);
 	}
 	else
 	{
-		while((iter = cc_list_find(self->queue_active, task,
-		                           cc_taskcmp_fn)) != NULL)
-		{
-			if(blocking == 0)
-			{
-				cc_workqNode_t* node;
-				node = (cc_workqNode_t*)
-				       cc_list_peekIter(iter);
-				status = node->status;
-				pthread_mutex_unlock(&self->mutex);
-				return status;
-			}
-
-			// must wait for active task to complete
-			pthread_cond_wait(&self->cond_complete,
-			                  &self->mutex);
-		}
-
-		if((iter = cc_list_find(self->queue_complete, task,
-		                         cc_taskcmp_fn)) != NULL)
-		{
-			// cancel completed task
-			cc_workqNode_t* node;
-			node = (cc_workqNode_t*)
-			       cc_list_remove(self->queue_complete,
-			                      &iter);
-			status = node->status;
-			cc_workqNode_delete(&node);
-		}
+		// cancel completed task
+		cc_workq_removeLocked(self, 0, self->queue_complete,
+		                      &iter);
 	}
 
 	pthread_mutex_unlock(&self->mutex);
@@ -684,20 +712,12 @@ int cc_workq_status(cc_workq_t* self, void* task)
 	int status = CC_WORKQ_STATUS_ERROR;
 	pthread_mutex_lock(&self->mutex);
 
-	cc_listIter_t* iter;
-	iter = cc_list_find(self->queue_pending, task,
-	                    cc_taskcmp_fn);
-	if(iter == NULL)
-	{
-		iter = cc_list_find(self->queue_active, task,
-		                    cc_taskcmp_fn);
-		if(iter == NULL)
-		{
-			iter = cc_list_find(self->queue_complete, task,
-			                    cc_taskcmp_fn);
-		}
-	}
-
+	// find task in map
+	cc_listIter_t*  iter;
+	cc_mapIter_t    miterator;
+	cc_mapIter_t*   miter = &miterator;
+	iter = (cc_listIter_t*)
+	       cc_map_findf(self->map_task, miter, "%p", task);
 	if(iter)
 	{
 		cc_workqNode_t* node;
