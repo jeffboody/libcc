@@ -859,12 +859,16 @@ void cc_mat4f_frustum(cc_mat4f_t* self, int load,
 	}
 }
 
-void cc_mat4f_ortho(cc_mat4f_t* self, int load,
-                    float l, float r,
-                    float b, float t,
-                    float n, float f)
+void cc_mat4f_orthoVK(cc_mat4f_t* self, int load,
+                      float l, float r,
+                      float b, float t,
+                      float n, float f)
 {
 	assert(self);
+
+	// note: origin is top-left to match Vulkan
+	// https://www.saschawillems.de/blog/2019/03/29/flipping-the-vulkana-viewport/
+	// https://github.com/PacktPublishing/Vulkan-Cookbook/blob/master/Library/Source%20Files/10%20Helper%20Recipes/05%20Preparing%20an%20orthographic%20projection%20matrix.cpp
 
 	if((l == r) || (t == b) || (n == f))
 	{
@@ -875,17 +879,16 @@ void cc_mat4f_ortho(cc_mat4f_t* self, int load,
 
 	float rml = r - l;
 	float rpl = r + l;
-	float tmb = t - b;
+	float bmt = b - t;
 	float tpb = t + b;
 	float fmn = f - n;
-	float fpn = f + n;
 
 	cc_mat4f_t m =
 	{
 		2.0f/rml,     0.0f,      0.0f, 0.0f,
-		    0.0f, 2.0f/tmb,      0.0f, 0.0f,
-		    0.0f,     0.0f, -2.0f/fmn, 0.0f,
-		-rpl/rml, -tpb/tmb,  -fpn/fmn, 1.0f,
+		    0.0f, 2.0f/bmt,      0.0f, 0.0f,
+		    0.0f,     0.0f, -1.0f/fmn, 0.0f,
+		-rpl/rml, -tpb/bmt,    -n/fmn, 1.0f,
 	};
 
 	if(load)
