@@ -25,6 +25,7 @@ add_library(cc
             STATIC
 
             # Source
+            cc_jobq.c
             cc_list.c
             cc_log.c
             cc_map.c

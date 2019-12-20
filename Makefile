@@ -1,5 +1,6 @@
 TARGET  = libcc.a
 CLASSES = \
+	cc_jobq      \
 	cc_list      \
 	cc_log       \
 	cc_map       \
