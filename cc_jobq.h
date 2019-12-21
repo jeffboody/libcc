@@ -27,49 +27,24 @@
 #include <pthread.h>
 
 #include "cc_list.h"
-#include "cc_map.h"
-
-// jobq status
-#define CC_JOBQ_STATUS_ERROR    0
-#define CC_JOBQ_STATUS_PENDING  1
-#define CC_JOBQ_STATUS_ACTIVE   2
-#define CC_JOBQ_STATUS_COMPLETE 3
-#define CC_JOBQ_STATUS_FAILURE  4
 
 // called from the jobq thread
-typedef int (*cc_jobqRun_fn)(int tid,
-                             void* owner,
-                             void* task);
-
-// called from main thread by
-// reset, purge, flush, finish or delete
-typedef void (*cc_jobqFinish_fn)(void* owner,
-                                 void* task,
-                                 int status);
-
-typedef struct
-{
-	int   status;
-	int   priority;
-	int   purge_id;
-	void* task;
-} cc_jobqNode_t;
+typedef void (*cc_jobqRun_fn)(int tid,
+                              void* owner,
+                              void* task);
 
 typedef struct
 {
 	// queue state
 	int   state;
 	void* owner;
-	int   purge_id;
 
 	// queues
 	cc_list_t* queue_pending;
-	cc_list_t* queue_complete;
 	cc_list_t* queue_active;
 
 	// callbacks
-	cc_jobqRun_fn    run_fn;
-	cc_jobqFinish_fn finish_fn;
+	cc_jobqRun_fn run_fn;
 
 	// jobq thread(s)
 	int             thread_count;
@@ -81,13 +56,10 @@ typedef struct
 } cc_jobq_t;
 
 cc_jobq_t* cc_jobq_new(void* owner, int thread_count,
-                       cc_jobqRun_fn run_fn,
-                       cc_jobqFinish_fn finish_fn);
+                       cc_jobqRun_fn run_fn);
 void        cc_jobq_delete(cc_jobq_t** _self);
-void        cc_jobq_flush(cc_jobq_t* self);
 void        cc_jobq_finish(cc_jobq_t* self);
-int         cc_jobq_run(cc_jobq_t* self, void* task,
-                        int priority);
+int         cc_jobq_run(cc_jobq_t* self, void* task);
 int         cc_jobq_pending(cc_jobq_t* self);
 
 #endif
