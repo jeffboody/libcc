@@ -21,6 +21,7 @@
  *
  */
 
+#include <sys/resource.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -43,6 +44,14 @@ static void* cc_jobq_thread(void* arg)
 	assert(arg);
 
 	cc_jobq_t* self = (cc_jobq_t*) arg;
+
+	// override the thread priority
+	if(self->thread_priority == CC_JOBQ_THREAD_PRIORITY_DEFAULT)
+	{
+		int priority = getpriority(PRIO_PROCESS, 0);
+		setpriority(PRIO_PROCESS, 0, priority+5);
+	}
+
 	pthread_mutex_lock(&self->mutex);
 
 	// checkout the next available thread id
@@ -97,6 +106,7 @@ static void* cc_jobq_thread(void* arg)
 
 cc_jobq_t*
 cc_jobq_new(void* owner, int thread_count,
+            int thread_priority,
             cc_jobqRun_fn run_fn)
 {
 	// owner may be NULL
@@ -110,11 +120,12 @@ cc_jobq_new(void* owner, int thread_count,
 		return NULL;
 	}
 
-	self->state        = CC_JOBQ_STATE_RUNNING;
-	self->owner        = owner;
-	self->thread_count = thread_count;
-	self->next_tid     = 0;
-	self->run_fn       = run_fn;
+	self->state           = CC_JOBQ_STATE_RUNNING;
+	self->owner           = owner;
+	self->thread_count    = thread_count;
+	self->thread_priority = thread_priority;
+	self->next_tid        = 0;
+	self->run_fn          = run_fn;
 
 	// PTHREAD_MUTEX_DEFAULT is not re-entrant
 	if(pthread_mutex_init(&self->mutex, NULL) != 0)

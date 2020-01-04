@@ -21,6 +21,7 @@
  *
  */
 
+#include <sys/resource.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -103,6 +104,14 @@ static void* cc_workq_thread(void* arg)
 	assert(arg);
 
 	cc_workq_t* self = (cc_workq_t*) arg;
+
+	// override the thread priority
+	if(self->thread_priority == CC_WORKQ_THREAD_PRIORITY_DEFAULT)
+	{
+		int priority = getpriority(PRIO_PROCESS, 0);
+		setpriority(PRIO_PROCESS, 0, priority+5);
+	}
+
 	pthread_mutex_lock(&self->mutex);
 
 	// checkout the next available thread id
@@ -179,6 +188,7 @@ static void cc_workq_flushLocked(cc_workq_t* self)
 
 cc_workq_t*
 cc_workq_new(void* owner, int thread_count,
+             int thread_priority,
              cc_workqRun_fn run_fn,
              cc_workqFinish_fn finish_fn)
 {
@@ -194,13 +204,14 @@ cc_workq_new(void* owner, int thread_count,
 		return NULL;
 	}
 
-	self->state        = CC_WORKQ_STATE_RUNNING;
-	self->owner        = owner;
-	self->purge_id     = 0;
-	self->thread_count = thread_count;
-	self->next_tid     = 0;
-	self->run_fn       = run_fn;
-	self->finish_fn    = finish_fn;
+	self->state           = CC_WORKQ_STATE_RUNNING;
+	self->owner           = owner;
+	self->purge_id        = 0;
+	self->thread_count    = thread_count;
+	self->thread_priority = thread_priority;
+	self->next_tid        = 0;
+	self->run_fn          = run_fn;
+	self->finish_fn       = finish_fn;
 
 	// PTHREAD_MUTEX_DEFAULT is not re-entrant
 	if(pthread_mutex_init(&self->mutex, NULL) != 0)

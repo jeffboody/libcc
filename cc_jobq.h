@@ -28,6 +28,9 @@
 
 #include "cc_list.h"
 
+#define CC_JOBQ_THREAD_PRIORITY_DEFAULT 0
+#define CC_JOBQ_THREAD_PRIORITY_HIGH    1
+
 // called from the jobq thread
 typedef void (*cc_jobqRun_fn)(int tid,
                               void* owner,
@@ -48,6 +51,7 @@ typedef struct
 
 	// jobq thread(s)
 	int             thread_count;
+	int             thread_priority;
 	pthread_t*      threads;
 	int             next_tid;
 	pthread_mutex_t mutex;
@@ -56,6 +60,7 @@ typedef struct
 } cc_jobq_t;
 
 cc_jobq_t* cc_jobq_new(void* owner, int thread_count,
+                       int thread_priority,
                        cc_jobqRun_fn run_fn);
 void        cc_jobq_delete(cc_jobq_t** _self);
 void        cc_jobq_finish(cc_jobq_t* self);

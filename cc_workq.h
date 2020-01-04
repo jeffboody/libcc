@@ -36,6 +36,9 @@
 #define CC_WORKQ_STATUS_COMPLETE 3
 #define CC_WORKQ_STATUS_FAILURE  4
 
+#define CC_WORKQ_THREAD_PRIORITY_DEFAULT 0
+#define CC_WORKQ_THREAD_PRIORITY_HIGH    1
+
 // called from the workq thread
 typedef int (*cc_workqRun_fn)(int tid,
                               void* owner,
@@ -76,6 +79,7 @@ typedef struct
 
 	// workq thread(s)
 	int             thread_count;
+	int             thread_priority;
 	pthread_t*      threads;
 	int             next_tid;
 	pthread_mutex_t mutex;
@@ -84,6 +88,7 @@ typedef struct
 } cc_workq_t;
 
 cc_workq_t* cc_workq_new(void* owner, int thread_count,
+                         int thread_priority,
                          cc_workqRun_fn run_fn,
                          cc_workqFinish_fn finish_fn);
 void        cc_workq_delete(cc_workq_t** _self);
