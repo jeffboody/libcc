@@ -46,6 +46,7 @@
 	#define ANDROID_LOG_WARN  2
 	#define ANDROID_LOG_ERROR 3
 #endif
+#include <assert.h>
 
 #ifndef LOG_TAG
 	#define LOG_TAG NULL
@@ -101,6 +102,14 @@ void cc_trace_end(void);
 		#define TRACE_END() (cc_trace_end())
 	#else
 		#define TRACE_END()
+	#endif
+#endif
+
+#ifndef ASSERT
+	#ifdef ASSERT_DEBUG
+		#define ASSERT(...) (assert(__VA_ARGS__))
+	#else
+		#define ASSERT(...)
 	#endif
 #endif
 

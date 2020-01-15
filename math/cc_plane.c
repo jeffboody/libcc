@@ -21,7 +21,6 @@
  *
  */
 
-#include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 
@@ -36,7 +35,7 @@
 void cc_plane_load(cc_plane_t* self,
                    float nx, float ny, float nz, float d)
 {
-	assert(self);
+	ASSERT(self);
 
 	cc_vec3f_load(&self->n, nx, ny, nz);
 	self->d = d;
@@ -44,8 +43,8 @@ void cc_plane_load(cc_plane_t* self,
 
 void cc_plane_copy(const cc_plane_t* self, cc_plane_t* copy)
 {
-	assert(self);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(copy);
 
 	cc_vec3f_copy(&self->n, &copy->n);
 	copy->d = self->d;
@@ -54,8 +53,8 @@ void cc_plane_copy(const cc_plane_t* self, cc_plane_t* copy)
 float cc_plane_distance(const cc_plane_t* self,
                         const cc_vec3f_t* p)
 {
-	assert(self);
-	assert(p);
+	ASSERT(self);
+	ASSERT(p);
 
 	cc_vec3f_t v;
 	cc_vec3f_t q;
@@ -67,8 +66,8 @@ float cc_plane_distance(const cc_plane_t* self,
 int cc_plane_clipsphere(const cc_plane_t* self,
                         const cc_sphere_t* s)
 {
-	assert(self);
-	assert(s);
+	ASSERT(self);
+	ASSERT(s);
 
 	float d = cc_plane_distance(self, &s->c);
 	return ((s->r + d) < 0.0f) ? 1 : 0;

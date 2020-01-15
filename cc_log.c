@@ -21,7 +21,6 @@
  *
  */
 
-#include <assert.h>
 #include <fcntl.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -42,9 +41,9 @@ static int g_trace_fd = -1;
 void cc_log(const char* func, int line, int type,
             const char* tag, const char* fmt, ...)
 {
-	assert(func);
-	assert(tag);
-	assert(fmt);
+	ASSERT(func);
+	ASSERT(tag);
+	ASSERT(fmt);
 
 	char buf[256];
 	#ifdef ANDROID

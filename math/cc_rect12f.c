@@ -21,7 +21,6 @@
  *
  */
 
-#include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 
@@ -36,7 +35,7 @@
 void cc_rect1f_init(cc_rect1f_t* self,
                     float t, float l, float w, float h)
 {
-	assert(self);
+	ASSERT(self);
 
 	self->t = t;
 	self->l = l;
@@ -47,8 +46,8 @@ void cc_rect1f_init(cc_rect1f_t* self,
 void cc_rect1f_copy(const cc_rect1f_t* self,
                     cc_rect1f_t* copy)
 {
-	assert(self);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(copy);
 
 	copy->t = self->t;
 	copy->l = self->l;
@@ -59,8 +58,8 @@ void cc_rect1f_copy(const cc_rect1f_t* self,
 void cc_rect1f_copy2f(const cc_rect1f_t* self,
                       cc_rect2f_t* copy)
 {
-	assert(self);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(copy);
 
 	copy->t = self->t;
 	copy->l = self->l;
@@ -71,7 +70,7 @@ void cc_rect1f_copy2f(const cc_rect1f_t* self,
 int cc_rect1f_contains(const cc_rect1f_t* self,
                        float x, float y)
 {
-	assert(self);
+	ASSERT(self);
 
 	cc_rect2f_t rect;
 	cc_rect1f_copy2f(self, &rect);
@@ -82,9 +81,9 @@ int cc_rect1f_intersect(const cc_rect1f_t* a,
                         const cc_rect1f_t* b,
                         cc_rect1f_t* c)
 {
-	assert(a);
-	assert(b);
-	assert(c);
+	ASSERT(a);
+	ASSERT(b);
+	ASSERT(c);
 
 	cc_rect2f_t a2;
 	cc_rect2f_t b2;
@@ -104,7 +103,7 @@ int cc_rect1f_intersect(const cc_rect1f_t* a,
 void cc_rect2f_init(cc_rect2f_t* self,
                     float t, float l, float b, float r)
 {
-	assert(self);
+	ASSERT(self);
 
 	self->t = t;
 	self->l = l;
@@ -115,8 +114,8 @@ void cc_rect2f_init(cc_rect2f_t* self,
 void cc_rect2f_copy(const cc_rect2f_t* self,
                     cc_rect2f_t* copy)
 {
-	assert(self);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(copy);
 
 	copy->t = self->t;
 	copy->l = self->l;
@@ -127,8 +126,8 @@ void cc_rect2f_copy(const cc_rect2f_t* self,
 void cc_rect2f_copy1f(const cc_rect2f_t* self,
                       cc_rect1f_t* copy)
 {
-	assert(self);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(copy);
 
 	copy->t = self->t;
 	copy->l = self->l;
@@ -139,7 +138,7 @@ void cc_rect2f_copy1f(const cc_rect2f_t* self,
 int cc_rect2f_contains(const cc_rect2f_t* self,
                        float x, float y)
 {
-	assert(self);
+	ASSERT(self);
 
 	float t = self->t;
 	float l = self->l;
@@ -166,9 +165,9 @@ int cc_rect2f_intersect(const cc_rect2f_t* a,
                         const cc_rect2f_t* b,
                         cc_rect2f_t* c)
 {
-	assert(a);
-	assert(b);
-	assert(c);
+	ASSERT(a);
+	ASSERT(b);
+	ASSERT(c);
 
 	float at = a->t;
 	float al = a->l;

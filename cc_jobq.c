@@ -22,7 +22,6 @@
  */
 
 #include <sys/resource.h>
-#include <assert.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -41,7 +40,7 @@ const int CC_JOBQ_STATE_STOP    = 1;
 
 static void* cc_jobq_thread(void* arg)
 {
-	assert(arg);
+	ASSERT(arg);
 
 	cc_jobq_t* self = (cc_jobq_t*) arg;
 
@@ -110,7 +109,7 @@ cc_jobq_new(void* owner, int thread_count,
             cc_jobqRun_fn run_fn)
 {
 	// owner may be NULL
-	assert(run_fn);
+	ASSERT(run_fn);
 
 	cc_jobq_t* self;
 	self = (cc_jobq_t*) CALLOC(1, sizeof(cc_jobq_t));
@@ -214,7 +213,7 @@ cc_jobq_new(void* owner, int thread_count,
 void cc_jobq_delete(cc_jobq_t** _self)
 {
 	// *_self can be null
-	assert(_self);
+	ASSERT(_self);
 
 	cc_jobq_t* self = *_self;
 	if(self)
@@ -250,7 +249,7 @@ void cc_jobq_delete(cc_jobq_t** _self)
 
 void cc_jobq_finish(cc_jobq_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	pthread_mutex_lock(&self->mutex);
 
@@ -274,8 +273,8 @@ void cc_jobq_finish(cc_jobq_t* self)
 
 int cc_jobq_run(cc_jobq_t* self, void* task)
 {
-	assert(self);
-	assert(task);
+	ASSERT(self);
+	ASSERT(task);
 
 	pthread_mutex_lock(&self->mutex);
 
@@ -298,7 +297,7 @@ int cc_jobq_run(cc_jobq_t* self, void* task)
 
 int cc_jobq_pending(cc_jobq_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	int size;
 	pthread_mutex_lock(&self->mutex);

@@ -21,7 +21,6 @@
  *
  */
 
-#include <assert.h>
 #include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -40,8 +39,8 @@
 static void
 cc_mapIter_init(cc_mapIter_t* self, cc_mapNode_t* node)
 {
-	assert(self);
-	assert(node);
+	ASSERT(self);
+	ASSERT(node);
 
 	self->depth   = 0;
 	self->key[0]  = node->k;
@@ -53,10 +52,10 @@ static void
 cc_mapIter_update(cc_mapIter_t* self, int d,
                   cc_mapNode_t* node)
 {
-	assert(self);
-	assert(d >= 0);
-	assert(d < (CC_MAP_KEYLEN - 1));
-	assert(node);
+	ASSERT(self);
+	ASSERT(d >= 0);
+	ASSERT(d < (CC_MAP_KEYLEN - 1));
+	ASSERT(node);
 
 	self->depth      = d;
 	self->key[d]     = node->k;
@@ -71,7 +70,7 @@ cc_mapIter_update(cc_mapIter_t* self, int d,
 static cc_mapNode_t*
 cc_mapNode_new(cc_mapNode_t* prev, cc_map_t* map, char k)
 {
-	assert(map);
+	ASSERT(map);
 
 	// prev may be NULL for head
 
@@ -97,8 +96,8 @@ cc_mapNode_new(cc_mapNode_t* prev, cc_map_t* map, char k)
 static void
 cc_mapNode_delete(cc_mapNode_t** _self, cc_map_t* map)
 {
-	assert(_self);
-	assert(map);
+	ASSERT(_self);
+	ASSERT(map);
 
 	cc_mapNode_t* self = *_self;
 	if(self)
@@ -119,8 +118,8 @@ cc_mapNode_delete(cc_mapNode_t** _self, cc_map_t* map)
 static void
 cc_map_clean(cc_map_t* self, cc_mapNode_t* node)
 {
-	assert(self);
-	assert(node);
+	ASSERT(self);
+	ASSERT(node);
 
 	// check if the node is an endpoint or traversal node
 	if(node->val || node->down)
@@ -178,7 +177,7 @@ cc_map_t* cc_map_new(void)
 
 void cc_map_delete(cc_map_t** _self)
 {
-	assert(_self);
+	ASSERT(_self);
 
 	cc_map_t* self = *_self;
 	if(self)
@@ -196,7 +195,7 @@ void cc_map_delete(cc_map_t** _self)
 
 void cc_map_discard(cc_map_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	self->size = 0;
 	cc_mapNode_delete(&self->head, self);
@@ -204,14 +203,14 @@ void cc_map_discard(cc_map_t* self)
 
 int cc_map_size(const cc_map_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	return self->size;
 }
 
 size_t cc_map_sizeof(const cc_map_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	return sizeof(cc_map_t) +
 	       self->nodes*sizeof(cc_mapNode_t);
@@ -220,8 +219,8 @@ size_t cc_map_sizeof(const cc_map_t* self)
 cc_mapIter_t*
 cc_map_head(const cc_map_t* self, cc_mapIter_t* iter)
 {
-	assert(self);
-	assert(iter);
+	ASSERT(self);
+	ASSERT(iter);
 
 	if(self->head == NULL)
 	{
@@ -240,7 +239,7 @@ cc_map_head(const cc_map_t* self, cc_mapIter_t* iter)
 
 cc_mapIter_t* cc_map_next(cc_mapIter_t* iter)
 {
-	assert(iter);
+	ASSERT(iter);
 
 	int d = iter->depth;
 	cc_mapNode_t* node = iter->node[d];
@@ -288,7 +287,7 @@ cc_mapIter_t* cc_map_next(cc_mapIter_t* iter)
 
 const void* cc_map_val(const cc_mapIter_t* iter)
 {
-	assert(iter);
+	ASSERT(iter);
 
 	int d = iter->depth;
 	cc_mapNode_t* node = iter->node[d];
@@ -297,7 +296,7 @@ const void* cc_map_val(const cc_mapIter_t* iter)
 
 const char* cc_map_key(const cc_mapIter_t* iter)
 {
-	assert(iter);
+	ASSERT(iter);
 
 	return iter->key;
 }
@@ -306,9 +305,9 @@ const void*
 cc_map_find(const cc_map_t* self, cc_mapIter_t* iter,
             const char* key)
 {
-	assert(self);
-	assert(iter);
-	assert(key);
+	ASSERT(self);
+	ASSERT(iter);
+	ASSERT(key);
 
 	int len = strlen(key);
 	if((len >= CC_MAP_KEYLEN) || (len == 0))
@@ -371,9 +370,9 @@ const void*
 cc_map_findf(const cc_map_t* self, cc_mapIter_t* iter,
              const char* fmt, ...)
 {
-	assert(self);
-	assert(iter);
-	assert(fmt);
+	ASSERT(self);
+	ASSERT(iter);
+	ASSERT(fmt);
 
 	char key[CC_MAP_KEYLEN];
 	va_list argptr;
@@ -387,9 +386,9 @@ cc_map_findf(const cc_map_t* self, cc_mapIter_t* iter,
 int cc_map_add(cc_map_t* self, const void* val,
                const char* key)
 {
-	assert(self);
-	assert(val);
-	assert(key);
+	ASSERT(self);
+	ASSERT(val);
+	ASSERT(key);
 
 	int len = strlen(key);
 	if((len >= CC_MAP_KEYLEN) || (len == 0))
@@ -514,7 +513,7 @@ int cc_map_add(cc_map_t* self, const void* val,
 	}
 
 	// the key/val can always be added before d equals len
-	assert(0);
+	ASSERT(0);
 
 	// failure
 	fail_add:
@@ -528,9 +527,9 @@ int cc_map_add(cc_map_t* self, const void* val,
 int cc_map_addf(cc_map_t* self, const void* val,
                 const char* fmt, ...)
 {
-	assert(self);
-	assert(val);
-	assert(fmt);
+	ASSERT(self);
+	ASSERT(val);
+	ASSERT(fmt);
 
 	char key[CC_MAP_KEYLEN];
 	va_list argptr;
@@ -544,8 +543,8 @@ int cc_map_addf(cc_map_t* self, const void* val,
 const void*
 cc_map_replace(cc_mapIter_t* iter, const void*  val)
 {
-	assert(iter);
-	assert(val);
+	ASSERT(iter);
+	ASSERT(val);
 
 	int d = iter->depth;
 	cc_mapNode_t* node = iter->node[d];
@@ -558,9 +557,9 @@ cc_map_replace(cc_mapIter_t* iter, const void*  val)
 const void*
 cc_map_remove(cc_map_t* self, cc_mapIter_t** _iter)
 {
-	assert(self);
-	assert(_iter);
-	assert(*_iter);
+	ASSERT(self);
+	ASSERT(_iter);
+	ASSERT(*_iter);
 
 	cc_mapIter_t* iter = *_iter;
 

@@ -21,7 +21,6 @@
  *
  */
 
-#include <assert.h>
 #include <stdlib.h>
 
 #define LOG_TAG "cc"
@@ -36,7 +35,7 @@ void cc_ray_load(cc_ray_t* self,
                  float px, float py, float pz,
                  float vx, float vy, float vz)
 {
-	assert(self);
+	ASSERT(self);
 
 	cc_vec3f_load(&self->p, px, py, pz);
 	cc_vec3f_load(&self->v, vx, vy, vz);
@@ -46,8 +45,8 @@ void cc_ray_load(cc_ray_t* self,
 int cc_ray_hitsphere(const cc_ray_t* self,
                      const cc_sphere_t* s)
 {
-	assert(self);
-	assert(s);
+	ASSERT(self);
+	ASSERT(s);
 
 	cc_vec3f_t v;
 	cc_vec3f_t p;
@@ -78,8 +77,8 @@ int cc_ray_hitsphere(const cc_ray_t* self,
 void cc_ray_getpoint(const cc_ray_t* self, float s,
                      cc_vec3f_t* p)
 {
-	assert(self);
-	assert(p);
+	ASSERT(self);
+	ASSERT(p);
 
 	p->x = self->p.x + s*self->v.x;
 	p->y = self->p.y + s*self->v.y;

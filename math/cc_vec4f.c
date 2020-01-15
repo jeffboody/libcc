@@ -21,7 +21,6 @@
  *
  */
 
-#include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 
@@ -53,7 +52,7 @@ cc_vec4f_t* cc_vec4f_new(float x, float y, float z, float w)
 
 void cc_vec4f_delete(cc_vec4f_t** _self)
 {
-	assert(_self);
+	ASSERT(_self);
 
 	cc_vec4f_t* self = *_self;
 	if(self)
@@ -66,7 +65,7 @@ void cc_vec4f_delete(cc_vec4f_t** _self)
 void cc_vec4f_load(cc_vec4f_t* self, float x, float y,
                    float z, float w)
 {
-	assert(self);
+	ASSERT(self);
 
 	self->x = x;
 	self->y = y;
@@ -76,8 +75,8 @@ void cc_vec4f_load(cc_vec4f_t* self, float x, float y,
 
 void cc_vec4f_copy(const cc_vec4f_t* self, cc_vec4f_t* copy)
 {
-	assert(self);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(copy);
 
 	copy->x = self->x;
 	copy->y = self->y;
@@ -87,7 +86,7 @@ void cc_vec4f_copy(const cc_vec4f_t* self, cc_vec4f_t* copy)
 
 float cc_vec4f_mag(const cc_vec4f_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	return sqrtf(self->x*self->x + self->y*self->y +
 	             self->z*self->z + self->w*self->w);
@@ -95,8 +94,8 @@ float cc_vec4f_mag(const cc_vec4f_t* self)
 
 void cc_vec4f_addv(cc_vec4f_t* self, const cc_vec4f_t* v)
 {
-	assert(self);
-	assert(v);
+	ASSERT(self);
+	ASSERT(v);
 
 	self->x += v->x;
 	self->y += v->y;
@@ -108,9 +107,9 @@ void cc_vec4f_addv_copy(const cc_vec4f_t* self,
                         const cc_vec4f_t* v,
                         cc_vec4f_t* copy)
 {
-	assert(self);
-	assert(v);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(v);
+	ASSERT(copy);
 
 	copy->x = self->x + v->x;
 	copy->y = self->y + v->y;
@@ -120,7 +119,7 @@ void cc_vec4f_addv_copy(const cc_vec4f_t* self,
 
 void cc_vec4f_adds(cc_vec4f_t* self, float s)
 {
-	assert(self);
+	ASSERT(self);
 
 	self->x += s;
 	self->y += s;
@@ -131,8 +130,8 @@ void cc_vec4f_adds(cc_vec4f_t* self, float s)
 void cc_vec4f_adds_copy(const cc_vec4f_t* self, float s,
                         cc_vec4f_t* copy)
 {
-	assert(self);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(copy);
 
 	copy->x = self->x + s;
 	copy->y = self->y + s;
@@ -142,8 +141,8 @@ void cc_vec4f_adds_copy(const cc_vec4f_t* self, float s,
 
 void cc_vec4f_subv(cc_vec4f_t* self, const cc_vec4f_t* v)
 {
-	assert(self);
-	assert(v);
+	ASSERT(self);
+	ASSERT(v);
 
 	self->x -= v->x;
 	self->y -= v->y;
@@ -155,9 +154,9 @@ void cc_vec4f_subv_copy(const cc_vec4f_t* self,
                         const cc_vec4f_t* v,
                         cc_vec4f_t* copy)
 {
-	assert(self);
-	assert(v);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(v);
+	ASSERT(copy);
 
 	copy->x = self->x - v->x;
 	copy->y = self->y - v->y;
@@ -167,8 +166,8 @@ void cc_vec4f_subv_copy(const cc_vec4f_t* self,
 
 void cc_vec4f_mulv(cc_vec4f_t* self, const cc_vec4f_t* v)
 {
-	assert(self);
-	assert(v);
+	ASSERT(self);
+	ASSERT(v);
 
 	self->x *= v->x;
 	self->y *= v->y;
@@ -180,9 +179,9 @@ void cc_vec4f_mulv_copy(const cc_vec4f_t* self,
                         const cc_vec4f_t* v,
                         cc_vec4f_t* copy)
 {
-	assert(self);
-	assert(v);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(v);
+	ASSERT(copy);
 
 	copy->x = self->x*v->x;
 	copy->y = self->y*v->y;
@@ -192,7 +191,7 @@ void cc_vec4f_mulv_copy(const cc_vec4f_t* self,
 
 void cc_vec4f_muls(cc_vec4f_t* self, float s)
 {
-	assert(self);
+	ASSERT(self);
 
 	self->x *= s;
 	self->y *= s;
@@ -203,8 +202,8 @@ void cc_vec4f_muls(cc_vec4f_t* self, float s)
 void cc_vec4f_muls_copy(const cc_vec4f_t* self, float s,
                         cc_vec4f_t* copy)
 {
-	assert(self);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(copy);
 
 	copy->x = s*self->x;
 	copy->y = s*self->y;
@@ -214,7 +213,7 @@ void cc_vec4f_muls_copy(const cc_vec4f_t* self, float s,
 
 void cc_vec4f_normalize(cc_vec4f_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	float mag = cc_vec4f_mag(self);
 	cc_vec4f_muls(self, 1.0f/mag);
@@ -223,8 +222,8 @@ void cc_vec4f_normalize(cc_vec4f_t* self)
 void cc_vec4f_normalize_copy(const cc_vec4f_t* self,
                              cc_vec4f_t* copy)
 {
-	assert(self);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(copy);
 
 	float mag = cc_vec4f_mag(self);
 	cc_vec4f_muls_copy(self, 1.0f/mag, copy);
@@ -232,8 +231,8 @@ void cc_vec4f_normalize_copy(const cc_vec4f_t* self,
 
 float cc_vec4f_dot(const cc_vec4f_t* a, const cc_vec4f_t* b)
 {
-	assert(a);
-	assert(b);
+	ASSERT(a);
+	ASSERT(b);
 
 	return a->x*b->x + a->y*b->y + a->z*b->z + a->w*b->w;
 }

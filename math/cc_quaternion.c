@@ -21,7 +21,6 @@
  *
  */
 
-#include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 
@@ -36,7 +35,7 @@
 
 static void cc_quaternion_normalize(cc_quaternion_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	return cc_vec4f_normalize((cc_vec4f_t*) self);
 }
@@ -45,8 +44,8 @@ static void
 cc_quaternion_normalize_copy(const cc_quaternion_t* self,
                              cc_quaternion_t* copy)
 {
-	assert(self);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(copy);
 
 	return cc_vec4f_normalize_copy((const cc_vec4f_t*) self,
 	                               (cc_vec4f_t*) copy);
@@ -59,7 +58,7 @@ cc_quaternion_normalize_copy(const cc_quaternion_t* self,
 void cc_quaternion_load(cc_quaternion_t* self,
                         float x, float y, float z, float s)
 {
-	assert(self);
+	ASSERT(self);
 
 	cc_vec3f_load(&self->v, x, y, z);
 	self->s = s;
@@ -68,7 +67,7 @@ void cc_quaternion_load(cc_quaternion_t* self,
 void cc_quaternion_loadaxis(cc_quaternion_t* self, float a,
                             float x, float y, float z)
 {
-	assert(self);
+	ASSERT(self);
 
 	cc_vec3f_t v;
 	cc_vec3f_load(&v, x, y, z);
@@ -88,7 +87,7 @@ void cc_quaternion_loadaxis(cc_quaternion_t* self, float a,
 void cc_quaternion_loadeuler(cc_quaternion_t* self,
                              float rx, float ry, float rz)
 {
-	assert(self);
+	ASSERT(self);
 
 	#if 1
 		float rx2 = (rx/2.0f)*(M_PI/180.0f);
@@ -127,7 +126,7 @@ void cc_quaternion_loadaxisangle(cc_quaternion_t* self,
                                  float az,
                                  float angle)
 {
-	assert(self);
+	ASSERT(self);
 
 	// https://developer.android.com/guide/topics/sensors/sensors_motion.html
 	// http://www.flipcode.com/documents/matrfaq.html#Q56
@@ -143,8 +142,8 @@ void cc_quaternion_loadaxisangle(cc_quaternion_t* self,
 void cc_quaternion_copy(const cc_quaternion_t* self,
                         cc_quaternion_t* q)
 {
-	assert(self);
-	assert(q);
+	ASSERT(self);
+	ASSERT(q);
 
 	cc_quaternion_load(q, self->v.x, self->v.y,
 	                   self->v.z, self->s);
@@ -152,14 +151,14 @@ void cc_quaternion_copy(const cc_quaternion_t* self,
 
 void cc_quaternion_identity(cc_quaternion_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	cc_quaternion_load(self, 0.0f, 0.0f, 0.0f, 1.0f);
 }
 
 void cc_quaternion_inverse(cc_quaternion_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	cc_quaternion_load(self, -self->v.x, -self->v.y,
 	                   -self->v.z, self->s);
@@ -168,8 +167,8 @@ void cc_quaternion_inverse(cc_quaternion_t* self)
 void cc_quaternion_inverse_copy(const cc_quaternion_t* self,
                                 cc_quaternion_t* q)
 {
-	assert(self);
-	assert(q);
+	ASSERT(self);
+	ASSERT(q);
 
 	cc_quaternion_load(q, -self->v.x, -self->v.y,
 	                   -self->v.z, self->s);
@@ -178,8 +177,8 @@ void cc_quaternion_inverse_copy(const cc_quaternion_t* self,
 void cc_quaternion_rotateq(cc_quaternion_t* self,
                            const cc_quaternion_t* q)
 {
-	assert(self);
-	assert(q);
+	ASSERT(self);
+	ASSERT(q);
 
 	// reminder - quaternion multiplication is non-commutative
 	const cc_vec3f_t* av = &self->v;
@@ -216,9 +215,9 @@ void cc_quaternion_rotateq_copy(const cc_quaternion_t* self,
                                  const cc_quaternion_t* q,
                                  cc_quaternion_t* copy)
 {
-	assert(self);
-	assert(q);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(q);
+	ASSERT(copy);
 
 	// reminder - quaternion multiplication is non-commutative
 	const cc_vec3f_t* av = &self->v;
@@ -254,9 +253,9 @@ void cc_quaternion_slerp(const cc_quaternion_t* a,
                          const cc_quaternion_t* b,
                          float t, cc_quaternion_t* c)
 {
-	assert(a);
-	assert(b);
-	assert(c);
+	ASSERT(a);
+	ASSERT(b);
+	ASSERT(c);
 
 	// https://en.wikipedia.org/wiki/Slerp
 
@@ -302,8 +301,8 @@ void cc_quaternion_slerp(const cc_quaternion_t* a,
 float cc_quaternion_compare(const cc_quaternion_t* a,
                             const cc_quaternion_t* b)
 {
-	assert(a);
-	assert(b);
+	ASSERT(a);
+	ASSERT(b);
 
 	float ds = b->s   - a->s;
 	float dx = b->v.x - a->v.x;

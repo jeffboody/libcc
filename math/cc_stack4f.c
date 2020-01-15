@@ -21,7 +21,6 @@
  *
  */
 
-#include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 
@@ -61,7 +60,7 @@ cc_stack4f_t* cc_stack4f_new(void)
 void cc_stack4f_delete(cc_stack4f_t** _self)
 {
 	// *_self can be null
-	assert(_self);
+	ASSERT(_self);
 
 	cc_stack4f_t* self = *_self;
 	if(self)
@@ -82,8 +81,8 @@ void cc_stack4f_delete(cc_stack4f_t** _self)
 
 void cc_stack4f_push(cc_stack4f_t* self, const cc_mat4f_t* m)
 {
-	assert(self);
-	assert(m);
+	ASSERT(self);
+	ASSERT(m);
 
 	cc_mat4f_t* c = (cc_mat4f_t*) CALLOC(1, sizeof(cc_mat4f_t));
 	if(c == NULL)
@@ -97,8 +96,8 @@ void cc_stack4f_push(cc_stack4f_t* self, const cc_mat4f_t* m)
 
 void cc_stack4f_pop(cc_stack4f_t* self, cc_mat4f_t* m)
 {
-	assert(self);
-	assert(m);
+	ASSERT(self);
+	ASSERT(m);
 
 	cc_listIter_t* iter = cc_list_head(self->matrix_stack);
 	if(iter)

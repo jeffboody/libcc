@@ -21,7 +21,6 @@
  *
  */
 
-#include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,7 +37,7 @@
 static void
 cc_orientation_update(cc_orientation_t* self, int slerp)
 {
-	assert(self);
+	ASSERT(self);
 
 	if((self->a_ts == 0.0) || (self->m_ts == 0.0))
 	{
@@ -184,7 +183,7 @@ cc_orientation_t* cc_orientation_new(void)
 
 void cc_orientation_delete(cc_orientation_t** _self)
 {
-	assert(_self);
+	ASSERT(_self);
 
 	cc_orientation_t* self = *_self;
 	if(self)
@@ -196,7 +195,7 @@ void cc_orientation_delete(cc_orientation_t** _self)
 
 void cc_orientation_reset(cc_orientation_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	self->a_ts       = 0.0;
 	self->a_ax       = 0.0f;
@@ -224,7 +223,7 @@ void cc_orientation_accelerometer(cc_orientation_t* self,
                                   float az,
                                   int rotation)
 {
-	assert(self);
+	ASSERT(self);
 
 	// reset orientation when rotation changes
 	// because this often times happens when
@@ -258,7 +257,7 @@ void cc_orientation_magnetometer(cc_orientation_t* self,
                                  float gfx, float gfy,
                                  float gfz)
 {
-	assert(self);
+	ASSERT(self);
 
 	// don't slerp for the first rotation
 	int slerp = 1;
@@ -282,7 +281,7 @@ void cc_orientation_gyroscope(cc_orientation_t* self,
                               double ts,
                               float ax, float ay, float az)
 {
-	assert(self);
+	ASSERT(self);
 
 	// https://developer.android.com/guide/topics/sensors/sensors_motion.html
 	// http://www.flipcode.com/documents/matrfaq.html#Q56
@@ -310,8 +309,8 @@ void cc_orientation_gyroscope(cc_orientation_t* self,
 void cc_orientation_mat4f(cc_orientation_t* self,
                           cc_mat4f_t* m)
 {
-	assert(self);
-	assert(m);
+	ASSERT(self);
+	ASSERT(m);
 
 	cc_mat4f_rotateq(m, 1, &self->Q);
 }
@@ -319,10 +318,10 @@ void cc_orientation_mat4f(cc_orientation_t* self,
 void cc_orientation_vpn(cc_orientation_t* self,
                         float* vx, float* vy, float* vz)
 {
-	assert(self);
-	assert(vx);
-	assert(vy);
-	assert(vz);
+	ASSERT(self);
+	ASSERT(vx);
+	ASSERT(vy);
+	ASSERT(vz);
 
 	// vpn is the negative z-axis of the
 	// transpose/inverse rotation matrix
@@ -337,9 +336,9 @@ void cc_orientation_spherical(cc_orientation_t* self,
                               float* theta,
                               float* phi)
 {
-	assert(self);
-	assert(theta);
-	assert(phi);
+	ASSERT(self);
+	ASSERT(theta);
+	ASSERT(phi);
 
 	cc_mat4f_t m;
 	cc_orientation_mat4f(self, &m);
@@ -369,10 +368,10 @@ void cc_orientation_euler(cc_orientation_t* self,
                           float* yaw, float* pitch,
                           float* roll)
 {
-	assert(self);
-	assert(yaw);
-	assert(pitch);
-	assert(roll);
+	ASSERT(self);
+	ASSERT(yaw);
+	ASSERT(pitch);
+	ASSERT(roll);
 
 	cc_mat4f_t m;
 	cc_orientation_mat4f(self, &m);

@@ -21,7 +21,6 @@
  *
  */
 
-#include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 
@@ -37,7 +36,7 @@ void cc_sphere_load(cc_sphere_t* self,
                     float cx, float cy, float cz,
                     float r)
 {
-	assert(self);
+	ASSERT(self);
 
 	cc_vec3f_load(&self->c, cx, cy, cz);
 	self->r = r;
@@ -46,8 +45,8 @@ void cc_sphere_load(cc_sphere_t* self,
 void cc_sphere_copy(const cc_sphere_t* self,
                     cc_sphere_t* copy)
 {
-	assert(self);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(copy);
 
 	cc_vec3f_copy(&self->c, &copy->c);
 	copy->r = self->r;

@@ -21,7 +21,6 @@
  *
  */
 
-#include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 
@@ -37,9 +36,9 @@ static void
 cc_mat4f_projuv(cc_vec4f_t* u, cc_vec4f_t* v,
                 cc_vec4f_t* projuv)
 {
-	assert(u);
-	assert(v);
-	assert(projuv);
+	ASSERT(u);
+	ASSERT(v);
+	ASSERT(projuv);
 
 	float dotvu = cc_vec4f_dot(v, u);
 	float dotuu = cc_vec4f_dot(u, u);
@@ -54,7 +53,7 @@ cc_mat4f_projuv(cc_vec4f_t* u, cc_vec4f_t* v,
 
 void cc_mat4f_identity(cc_mat4f_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	self->m00 = 1.0f;
 	self->m01 = 0.0f;
@@ -76,8 +75,8 @@ void cc_mat4f_identity(cc_mat4f_t* self)
 
 void cc_mat4f_copy(const cc_mat4f_t* self, cc_mat4f_t* copy)
 {
-	assert(self);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(copy);
 
 	copy->m00 = self->m00;
 	copy->m01 = self->m01;
@@ -99,7 +98,7 @@ void cc_mat4f_copy(const cc_mat4f_t* self, cc_mat4f_t* copy)
 
 void cc_mat4f_transpose(cc_mat4f_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	cc_mat4f_t copy;
 	cc_mat4f_transpose_copy(self, &copy);
@@ -109,8 +108,8 @@ void cc_mat4f_transpose(cc_mat4f_t* self)
 void cc_mat4f_transpose_copy(const cc_mat4f_t* self,
                              cc_mat4f_t* copy)
 {
-	assert(self);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(copy);
 
 	copy->m00 = self->m00;
 	copy->m01 = self->m10;
@@ -132,7 +131,7 @@ void cc_mat4f_transpose_copy(const cc_mat4f_t* self,
 
 void cc_mat4f_inverse(cc_mat4f_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	cc_mat4f_t copy;
 	cc_mat4f_inverse_copy(self, &copy);
@@ -142,8 +141,8 @@ void cc_mat4f_inverse(cc_mat4f_t* self)
 void cc_mat4f_inverse_copy(const cc_mat4f_t* self,
                            cc_mat4f_t* copy)
 {
-	assert(self);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(copy);
 
 	// augmented matrix [a|I]
 	// copy is initialized to I but will contain a^-1
@@ -246,8 +245,8 @@ void cc_mat4f_inverse_copy(const cc_mat4f_t* self,
 
 void cc_mat4f_mulm(cc_mat4f_t* self, const cc_mat4f_t* m)
 {
-	assert(self);
-	assert(m);
+	ASSERT(self);
+	ASSERT(m);
 
 	cc_mat4f_t copy;
 	cc_mat4f_mulm_copy(self, m, &copy);
@@ -258,9 +257,9 @@ void cc_mat4f_mulm_copy(const cc_mat4f_t* self,
                         const cc_mat4f_t* m,
                         cc_mat4f_t* copy)
 {
-	assert(self);
-	assert(m);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(m);
+	ASSERT(copy);
 
 	const cc_mat4f_t* a = self;
 	cc_mat4f_t*       c = copy;
@@ -284,8 +283,8 @@ void cc_mat4f_mulm_copy(const cc_mat4f_t* self,
 
 void cc_mat4f_mulv(const cc_mat4f_t* self, cc_vec4f_t* v)
 {
-	assert(self);
-	assert(v);
+	ASSERT(self);
+	ASSERT(v);
 
 	cc_vec4f_t copy;
 	cc_mat4f_mulv_copy(self, v, &copy);
@@ -296,9 +295,9 @@ void cc_mat4f_mulv_copy(const cc_mat4f_t* self,
                         const cc_vec4f_t* v,
                         cc_vec4f_t* copy)
 {
-	assert(self);
-	assert(v);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(v);
+	ASSERT(copy);
 
 	const cc_mat4f_t* a = self;
 	cc_vec4f_t*       c = copy;
@@ -310,7 +309,7 @@ void cc_mat4f_mulv_copy(const cc_mat4f_t* self,
 
 void cc_mat4f_muls(cc_mat4f_t* self, float s)
 {
-	assert(self);
+	ASSERT(self);
 
 	self->m00 *= s;
 	self->m01 *= s;
@@ -333,8 +332,8 @@ void cc_mat4f_muls(cc_mat4f_t* self, float s)
 void cc_mat4f_muls_copy(const cc_mat4f_t* self, float s,
                         cc_mat4f_t* copy)
 {
-	assert(self);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(copy);
 
 	copy->m00 = s*self->m00;
 	copy->m01 = s*self->m01;
@@ -356,8 +355,8 @@ void cc_mat4f_muls_copy(const cc_mat4f_t* self, float s,
 
 void cc_mat4f_addm(cc_mat4f_t* self, const cc_mat4f_t* m)
 {
-	assert(self);
-	assert(m);
+	ASSERT(self);
+	ASSERT(m);
 
 	self->m00 += m->m00;
 	self->m01 += m->m01;
@@ -381,9 +380,9 @@ void cc_mat4f_addm_copy(const cc_mat4f_t* self,
                         const cc_mat4f_t* m,
                         cc_mat4f_t* copy)
 {
-	assert(self);
-	assert(m);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(m);
+	ASSERT(copy);
 
 	copy->m00 = self->m00 + m->m00;
 	copy->m01 = self->m01 + m->m01;
@@ -405,7 +404,7 @@ void cc_mat4f_addm_copy(const cc_mat4f_t* self,
 
 void cc_mat4f_orthonormal(cc_mat4f_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	cc_mat4f_t copy;
 	cc_mat4f_orthonormal_copy(self, &copy);
@@ -415,8 +414,8 @@ void cc_mat4f_orthonormal(cc_mat4f_t* self)
 void cc_mat4f_orthonormal_copy(const cc_mat4f_t* self,
                                cc_mat4f_t* copy)
 {
-	assert(self);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(copy);
 
 	/*
 	 * perform modified Gram-Schmitt ortho-normalization
@@ -512,8 +511,8 @@ void cc_mat4f_orthonormal_copy(const cc_mat4f_t* self,
 void cc_mat4f_quaternion(const cc_mat4f_t* self,
                          cc_quaternion_t* q)
 {
-	assert(self);
-	assert(q);
+	ASSERT(self);
+	ASSERT(q);
 
 	// http://www.flipcode.com/documents/matrfaq.html#Q55
 	// http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
@@ -565,8 +564,8 @@ void cc_mat4f_quaternion(const cc_mat4f_t* self,
 void cc_mat4f_rotateq(cc_mat4f_t* self, int load,
                       const cc_quaternion_t* q)
 {
-	assert(self);
-	assert(q);
+	ASSERT(self);
+	ASSERT(q);
 
 	float x2 = q->v.x*q->v.x;
 	float y2 = q->v.y*q->v.y;
@@ -607,7 +606,7 @@ void cc_mat4f_lookat(cc_mat4f_t* self, int load,
                      float centerz,
                      float upx, float upy, float upz)
 {
-	assert(self);
+	ASSERT(self);
 
 	cc_vec3f_t eye =
 	{
@@ -659,7 +658,7 @@ void cc_mat4f_perspective(cc_mat4f_t* self, int load,
                           float fovy, float aspect,
                           float znear, float zfar)
 {
-	assert(self);
+	ASSERT(self);
 
 	float f   = 1.0f/tanf(fovy*(M_PI/180.0f)/2.0f);
 	float m00 = f/aspect;
@@ -693,8 +692,8 @@ void cc_mat4f_perspectiveStereo(cc_mat4f_t* pmL,
                                 float convergence,
                                 float eye_separation)
 {
-	assert(pmL);
-	assert(pmR);
+	ASSERT(pmL);
+	ASSERT(pmR);
 
 	// http://www.animesh.me/2011/05/rendering-3d-anaglyph-in-opengl.html
 
@@ -728,7 +727,7 @@ void cc_mat4f_rotate(cc_mat4f_t* self, int load,
                      float a,
                      float x, float y, float z)
 {
-	assert(self);
+	ASSERT(self);
 
 	// normalize x, y, z
 	float n = x*x + y*y + z*z;
@@ -775,7 +774,7 @@ void cc_mat4f_rotate(cc_mat4f_t* self, int load,
 void cc_mat4f_translate(cc_mat4f_t* self, int load,
                         float x, float y, float z)
 {
-	assert(self);
+	ASSERT(self);
 
 	cc_mat4f_t m =
 	{
@@ -798,7 +797,7 @@ void cc_mat4f_translate(cc_mat4f_t* self, int load,
 void cc_mat4f_scale(cc_mat4f_t* self, int load,
                     float x, float y, float z)
 {
-	assert(self);
+	ASSERT(self);
 
 	cc_mat4f_t m =
 	{
@@ -823,7 +822,7 @@ void cc_mat4f_frustum(cc_mat4f_t* self, int load,
                       float b, float t,
                       float n, float f)
 {
-	assert(self);
+	ASSERT(self);
 
 	if((n <= 0.0f) || (f <= 0.0f) ||
 	   (l == r) || (t == b) || (n == f))
@@ -864,7 +863,7 @@ void cc_mat4f_orthoVK(cc_mat4f_t* self, int load,
                       float b, float t,
                       float n, float f)
 {
-	assert(self);
+	ASSERT(self);
 
 	// note: origin is top-left to match Vulkan
 	// https://www.saschawillems.de/blog/2019/03/29/flipping-the-vulkana-viewport/
@@ -904,8 +903,8 @@ void cc_mat4f_orthoVK(cc_mat4f_t* self, int load,
 void cc_mat4f_normalmatrix(const cc_mat4f_t* self,
                            cc_mat3f_t* nm)
 {
-	assert(self);
-	assert(nm);
+	ASSERT(self);
+	ASSERT(nm);
 
 	// see link for the derivation of normal matrix
 	// http://www.lighthouse3d.com/opengl/glsl/index.php?normalmatrix

@@ -21,7 +21,6 @@
  *
  */
 
-#include <assert.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -69,7 +68,7 @@ cc_meminfo_t*   memory_meminfo = NULL;
 static cc_ator_t*
 cc_ator_new(const char* name)
 {
-	assert(name);
+	ASSERT(name);
 
 	cc_ator_t* self;
 	self = (cc_ator_t*) malloc(sizeof(cc_ator_t));
@@ -100,7 +99,7 @@ cc_ator_new(const char* name)
 
 static void cc_ator_delete(cc_ator_t** _self)
 {
-	assert(_self);
+	ASSERT(_self);
 
 	cc_ator_t* self = *_self;
 	if(self)
@@ -115,8 +114,8 @@ static void cc_ator_delete(cc_ator_t** _self)
 static int
 cc_ator_add(cc_ator_t* self, cc_pinfo_t* pinfo_ref)
 {
-	assert(self);
-	assert(pinfo_ref);
+	ASSERT(self);
+	ASSERT(pinfo_ref);
 
 	if(cc_map_addf(self->map_pinfo_ref,
 	               (const void*) pinfo_ref,
@@ -131,8 +130,8 @@ cc_ator_add(cc_ator_t* self, cc_pinfo_t* pinfo_ref)
 static void
 cc_ator_rem(cc_ator_t* self, cc_pinfo_t* pinfo_ref)
 {
-	assert(self);
-	assert(pinfo_ref);
+	ASSERT(self);
+	ASSERT(pinfo_ref);
 
 	cc_mapIter_t  hiterator;
 	cc_mapIter_t* hiter = &hiterator;
@@ -151,8 +150,8 @@ cc_ator_rem(cc_ator_t* self, cc_pinfo_t* pinfo_ref)
 static cc_pinfo_t*
 cc_pinfo_new(cc_ator_t* ator_ref, void* ptr, size_t size)
 {
-	assert(ator_ref);
-	assert(ptr);
+	ASSERT(ator_ref);
+	ASSERT(ptr);
 
 	cc_pinfo_t* self;
 	self = (cc_pinfo_t*) malloc(sizeof(cc_pinfo_t));
@@ -170,7 +169,7 @@ cc_pinfo_new(cc_ator_t* ator_ref, void* ptr, size_t size)
 
 static void cc_pinfo_delete(cc_pinfo_t** _self)
 {
-	assert(_self);
+	ASSERT(_self);
 
 	cc_pinfo_t* self = *_self;
 	if(self)
@@ -230,9 +229,9 @@ cc_meminfo_add(cc_meminfo_t* self,
                const char* func, int line,
                void* ptr, size_t size)
 {
-	assert(self);
-	assert(func);
-	assert(ptr);
+	ASSERT(self);
+	ASSERT(func);
+	ASSERT(ptr);
 
 	char name[CC_MEMORY_NAMELEN];
 	snprintf(name, CC_MEMORY_NAMELEN, "%s@%i", func, line);
@@ -294,9 +293,9 @@ static void
 cc_meminfo_rem(cc_meminfo_t* self, const char* func,
                int line, void* ptr)
 {
-	assert(self);
-	assert(func);
-	assert(ptr);
+	ASSERT(self);
+	ASSERT(func);
+	ASSERT(ptr);
 
 	cc_mapIter_t  hiterator;
 	cc_mapIter_t* hiter;
@@ -318,7 +317,7 @@ cc_meminfo_rem(cc_meminfo_t* self, const char* func,
 
 static void cc_meminfo_meminfo(cc_meminfo_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	LOGI("cnt_ator=%i, cnt_pinfo=%i, size=%i",
 	     cc_map_size(self->map_ator),
@@ -348,7 +347,7 @@ static void
 cc_memory_add(const char* func, int line, void* ptr,
               size_t size)
 {
-	assert(func);
+	ASSERT(func);
 
 	// ignore NULL
 	if(ptr == NULL)
@@ -372,7 +371,7 @@ cc_memory_add(const char* func, int line, void* ptr,
 static void
 cc_memory_rem(const char* func, int line, void* ptr)
 {
-	assert(func);
+	ASSERT(func);
 
 	// ignore NULL
 	if(ptr == NULL)

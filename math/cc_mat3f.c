@@ -21,7 +21,6 @@
  *
  */
 
-#include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 
@@ -35,7 +34,7 @@
 
 void cc_mat3f_identity(cc_mat3f_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	self->m00 = 1.0f;
 	self->m01 = 0.0f;
@@ -50,8 +49,8 @@ void cc_mat3f_identity(cc_mat3f_t* self)
 
 void cc_mat3f_copy(const cc_mat3f_t* self, cc_mat3f_t* copy)
 {
-	assert(self);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(copy);
 
 	copy->m00 = self->m00;
 	copy->m01 = self->m01;
@@ -66,7 +65,7 @@ void cc_mat3f_copy(const cc_mat3f_t* self, cc_mat3f_t* copy)
 
 void cc_mat3f_transpose(cc_mat3f_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	cc_mat3f_t copy;
 	cc_mat3f_transpose_copy(self, &copy);
@@ -76,8 +75,8 @@ void cc_mat3f_transpose(cc_mat3f_t* self)
 void cc_mat3f_transpose_copy(const cc_mat3f_t* self,
                              cc_mat3f_t* copy)
 {
-	assert(self);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(copy);
 
 	copy->m00 = self->m00;
 	copy->m01 = self->m10;
@@ -92,7 +91,7 @@ void cc_mat3f_transpose_copy(const cc_mat3f_t* self,
 
 void cc_mat3f_inverse(cc_mat3f_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	cc_mat3f_t copy;
 	cc_mat3f_inverse_copy(self, &copy);
@@ -102,8 +101,8 @@ void cc_mat3f_inverse(cc_mat3f_t* self)
 void cc_mat3f_inverse_copy(const cc_mat3f_t* self,
                            cc_mat3f_t* copy)
 {
-	assert(self);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(copy);
 
 	// augmented matrix [a|I]
 	// copy is initialized to I but will contain a^-1
@@ -206,8 +205,8 @@ void cc_mat3f_inverse_copy(const cc_mat3f_t* self,
 
 void cc_mat3f_mulm(cc_mat3f_t* self, const cc_mat3f_t* m)
 {
-	assert(self);
-	assert(m);
+	ASSERT(self);
+	ASSERT(m);
 
 	cc_mat3f_t copy;
 	cc_mat3f_mulm_copy(self, m, &copy);
@@ -218,9 +217,9 @@ void cc_mat3f_mulm_copy(const cc_mat3f_t* self,
                         const cc_mat3f_t* m,
                         cc_mat3f_t* copy)
 {
-	assert(self);
-	assert(m);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(m);
+	ASSERT(copy);
 
 	const cc_mat3f_t* a = self;
 	cc_mat3f_t*       c = copy;
@@ -237,8 +236,8 @@ void cc_mat3f_mulm_copy(const cc_mat3f_t* self,
 
 void cc_mat3f_mulv(const cc_mat3f_t* self, cc_vec3f_t* v)
 {
-	assert(self);
-	assert(v);
+	ASSERT(self);
+	ASSERT(v);
 
 	cc_vec3f_t copy;
 	cc_mat3f_mulv_copy(self, v, &copy);
@@ -249,9 +248,9 @@ void cc_mat3f_mulv_copy(const cc_mat3f_t* self,
                         const cc_vec3f_t* v,
                         cc_vec3f_t* copy)
 {
-	assert(self);
-	assert(v);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(v);
+	ASSERT(copy);
 
 	const cc_mat3f_t* a = self;
 	cc_vec3f_t*       c = copy;
@@ -262,7 +261,7 @@ void cc_mat3f_mulv_copy(const cc_mat3f_t* self,
 
 void cc_mat3f_muls(cc_mat3f_t* self, float s)
 {
-	assert(self);
+	ASSERT(self);
 
 	self->m00 *= s;
 	self->m01 *= s;
@@ -278,8 +277,8 @@ void cc_mat3f_muls(cc_mat3f_t* self, float s)
 void cc_mat3f_muls_copy(const cc_mat3f_t* self, float s,
                         cc_mat3f_t* copy)
 {
-	assert(self);
-	assert(copy);
+	ASSERT(self);
+	ASSERT(copy);
 
 	copy->m00 = s*self->m00;
 	copy->m01 = s*self->m01;

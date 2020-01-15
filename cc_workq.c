@@ -22,7 +22,6 @@
  */
 
 #include <sys/resource.h>
-#include <assert.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -45,8 +44,8 @@ const int CC_WORKQ_PURGE = -1;
 static cc_workqNode_t*
 cc_workqNode_new(void* task, int purge_id, int priority)
 {
-	assert(task);
-	assert((purge_id == 0) || (purge_id == 1));
+	ASSERT(task);
+	ASSERT((purge_id == 0) || (purge_id == 1));
 
 	cc_workqNode_t* self;
 	self = (cc_workqNode_t*) MALLOC(sizeof(cc_workqNode_t));
@@ -66,7 +65,7 @@ cc_workqNode_new(void* task, int purge_id, int priority)
 
 static void cc_workqNode_delete(cc_workqNode_t** _self)
 {
-	assert(_self);
+	ASSERT(_self);
 
 	cc_workqNode_t* self = *_self;
 	if(self)
@@ -80,9 +79,9 @@ static void
 cc_workq_removeLocked(cc_workq_t* self, int finish,
                       cc_list_t* queue, cc_listIter_t** _iter)
 {
-	assert(self);
-	assert(queue);
-	assert(_iter);
+	ASSERT(self);
+	ASSERT(queue);
+	ASSERT(_iter);
 
 	cc_workqNode_t* node;
 	cc_mapIter_t    miterator;
@@ -101,7 +100,7 @@ cc_workq_removeLocked(cc_workq_t* self, int finish,
 
 static void* cc_workq_thread(void* arg)
 {
-	assert(arg);
+	ASSERT(arg);
 
 	cc_workq_t* self = (cc_workq_t*) arg;
 
@@ -171,7 +170,7 @@ static void* cc_workq_thread(void* arg)
 }
 static void cc_workq_flushLocked(cc_workq_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	cc_listIter_t* iter;
 	iter = cc_list_head(self->queue_complete);
@@ -193,8 +192,8 @@ cc_workq_new(void* owner, int thread_count,
              cc_workqFinish_fn finish_fn)
 {
 	// owner may be NULL
-	assert(run_fn);
-	assert(finish_fn);
+	ASSERT(run_fn);
+	ASSERT(finish_fn);
 
 	cc_workq_t* self;
 	self = (cc_workq_t*) MALLOC(sizeof(cc_workq_t));
@@ -316,7 +315,7 @@ cc_workq_new(void* owner, int thread_count,
 void cc_workq_delete(cc_workq_t** _self)
 {
 	// *_self can be null
-	assert(_self);
+	ASSERT(_self);
 
 	cc_workq_t* self = *_self;
 	if(self)
@@ -356,7 +355,7 @@ void cc_workq_delete(cc_workq_t** _self)
 
 void cc_workq_reset(cc_workq_t* self, int blocking)
 {
-	assert(self);
+	ASSERT(self);
 
 	// save the purge_id
 	int purge_id = self->purge_id;
@@ -388,7 +387,7 @@ void cc_workq_reset(cc_workq_t* self, int blocking)
 
 void cc_workq_purge(cc_workq_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	pthread_mutex_lock(&self->mutex);
 
@@ -452,7 +451,7 @@ void cc_workq_purge(cc_workq_t* self)
 
 void cc_workq_flush(cc_workq_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	pthread_mutex_lock(&self->mutex);
 	cc_workq_flushLocked(self);
@@ -461,7 +460,7 @@ void cc_workq_flush(cc_workq_t* self)
 
 void cc_workq_finish(cc_workq_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	pthread_mutex_lock(&self->mutex);
 
@@ -492,8 +491,8 @@ void cc_workq_finish(cc_workq_t* self)
 int cc_workq_run(cc_workq_t* self, void* task,
                  int priority)
 {
-	assert(self);
-	assert(task);
+	ASSERT(self);
+	ASSERT(task);
 
 	pthread_mutex_lock(&self->mutex);
 
@@ -664,8 +663,8 @@ int cc_workq_run(cc_workq_t* self, void* task,
 int cc_workq_cancel(cc_workq_t* self, void* task,
                     int blocking)
 {
-	assert(self);
-	assert(task);
+	ASSERT(self);
+	ASSERT(task);
 
 	int status = CC_WORKQ_STATUS_ERROR;
 
@@ -717,8 +716,8 @@ int cc_workq_cancel(cc_workq_t* self, void* task,
 
 int cc_workq_status(cc_workq_t* self, void* task)
 {
-	assert(self);
-	assert(task);
+	ASSERT(self);
+	ASSERT(task);
 
 	int status = CC_WORKQ_STATUS_ERROR;
 	pthread_mutex_lock(&self->mutex);
@@ -742,7 +741,7 @@ int cc_workq_status(cc_workq_t* self, void* task)
 
 int cc_workq_pending(cc_workq_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	int size;
 	pthread_mutex_lock(&self->mutex);

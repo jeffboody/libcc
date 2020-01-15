@@ -21,8 +21,6 @@
  *
  */
 
-#include <assert.h>
-
 #define LOG_TAG "cc"
 #include "../cc_log.h"
 #include "cc_fplane.h"
@@ -34,8 +32,8 @@
 int cc_fplane_clipsphere(const cc_fplane_t* self,
                          const cc_sphere_t* s)
 {
-	assert(self);
-	assert(s);
+	ASSERT(self);
+	ASSERT(s);
 
 	if(cc_plane_clipsphere(&self->near,   s) ||
 	   cc_plane_clipsphere(&self->far,    s) ||

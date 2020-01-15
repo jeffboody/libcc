@@ -21,7 +21,6 @@
  *
  */
 
-#include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -67,7 +66,7 @@ cc_multimap_t* cc_multimap_new(cc_listcmp_fn compare)
 
 void cc_multimap_delete(cc_multimap_t** _self)
 {
-	assert(_self);
+	ASSERT(_self);
 
 	cc_multimap_t* self = *_self;
 	if(self)
@@ -80,21 +79,21 @@ void cc_multimap_delete(cc_multimap_t** _self)
 
 void cc_multimap_discard(cc_multimap_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	cc_map_discard(self->map);
 }
 
 int cc_multimap_size(const cc_multimap_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	return cc_map_size(self->map);
 }
 
 size_t cc_multimap_sizeof(const cc_multimap_t* self)
 {
-	assert(self);
+	ASSERT(self);
 
 	return sizeof(cc_multimap_t) + cc_map_sizeof(self->map);
 }
@@ -103,8 +102,8 @@ cc_multimapIter_t*
 cc_multimap_head(const cc_multimap_t* self,
                  cc_multimapIter_t* iter)
 {
-	assert(self);
-	assert(iter);
+	ASSERT(self);
+	ASSERT(iter);
 
 	iter->hiter = cc_map_head(self->map, &iter->hiterator);
 	if(iter->hiter == NULL)
@@ -120,7 +119,7 @@ cc_multimap_head(const cc_multimap_t* self,
 
 cc_multimapIter_t* cc_multimap_next(cc_multimapIter_t* iter)
 {
-	assert(iter);
+	ASSERT(iter);
 
 	iter->item = cc_list_next(iter->item);
 	if(iter->item)
@@ -142,7 +141,7 @@ cc_multimapIter_t* cc_multimap_next(cc_multimapIter_t* iter)
 
 cc_multimapIter_t* cc_multimap_nextItem(cc_multimapIter_t* iter)
 {
-	assert(iter);
+	ASSERT(iter);
 
 	iter->item = cc_list_next(iter->item);
 	if(iter->item)
@@ -155,7 +154,7 @@ cc_multimapIter_t* cc_multimap_nextItem(cc_multimapIter_t* iter)
 
 cc_multimapIter_t* cc_multimap_nextList(cc_multimapIter_t* iter)
 {
-	assert(iter);
+	ASSERT(iter);
 
 	iter->hiter = cc_map_next(iter->hiter);
 	if(iter->hiter == NULL)
@@ -171,7 +170,7 @@ cc_multimapIter_t* cc_multimap_nextList(cc_multimapIter_t* iter)
 
 const void* cc_multimap_val(const cc_multimapIter_t* iter)
 {
-	assert(iter);
+	ASSERT(iter);
 
 	return cc_list_peekIter(iter->item);
 }
@@ -179,14 +178,14 @@ const void* cc_multimap_val(const cc_multimapIter_t* iter)
 const cc_list_t*
 cc_multimap_list(const cc_multimapIter_t* iter)
 {
-	assert(iter);
+	ASSERT(iter);
 
 	return (const cc_list_t*) cc_map_val(iter->hiter);
 }
 
 const char* cc_multimap_key(const cc_multimapIter_t* iter)
 {
-	assert(iter);
+	ASSERT(iter);
 
 	return cc_map_key(iter->hiter);
 }
@@ -196,9 +195,9 @@ cc_multimap_find(const cc_multimap_t* self,
                  cc_multimapIter_t* iter,
                  const char* key)
 {
-	assert(self);
-	assert(iter);
-	assert(key);
+	ASSERT(self);
+	ASSERT(iter);
+	ASSERT(key);
 
 	iter->hiter = &iter->hiterator;
 
@@ -220,9 +219,9 @@ cc_multimap_findf(const cc_multimap_t* self,
                   cc_multimapIter_t* iter,
                   const char* fmt, ...)
 {
-	assert(self);
-	assert(iter);
-	assert(fmt);
+	ASSERT(self);
+	ASSERT(iter);
+	ASSERT(fmt);
 
 	char key[256];
 	va_list argptr;
@@ -237,9 +236,9 @@ int cc_multimap_add(cc_multimap_t* self,
                     const void* val,
                     const char* key)
 {
-	assert(self);
-	assert(val);
-	assert(key);
+	ASSERT(self);
+	ASSERT(val);
+	ASSERT(key);
 
 	cc_listIter_t* item;
 
@@ -302,9 +301,9 @@ int cc_multimap_add(cc_multimap_t* self,
 int cc_multimap_addf(cc_multimap_t* self, const void* val,
                      const char* fmt, ...)
 {
-	assert(self);
-	assert(val);
-	assert(fmt);
+	ASSERT(self);
+	ASSERT(val);
+	ASSERT(fmt);
 
 	char key[256];
 	va_list argptr;
@@ -319,8 +318,8 @@ const void*
 cc_multimap_replace(cc_multimapIter_t* iter,
                     const void*  val)
 {
-	assert(iter);
-	assert(val);
+	ASSERT(iter);
+	ASSERT(val);
 
 	cc_list_t* list;
 	list = (cc_list_t*)
@@ -332,9 +331,9 @@ const void*
 cc_multimap_remove(cc_multimap_t* self,
                    cc_multimapIter_t** _iter)
 {
-	assert(self);
-	assert(_iter);
-	assert(*_iter);
+	ASSERT(self);
+	ASSERT(_iter);
+	ASSERT(*_iter);
 
 	cc_multimapIter_t* iter = *_iter;
 
