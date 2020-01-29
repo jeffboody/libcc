@@ -662,9 +662,9 @@ void cc_mat4f_perspective(cc_mat4f_t* self, int load,
 
 	float f   = 1.0f/tanf(fovy*(M_PI/180.0f)/2.0f);
 	float m00 = f/aspect;
-	float m11 = f;
-	float m22 = (zfar + znear)/(znear - zfar);
-	float m23 = (2.0f*zfar*znear)/(znear - zfar);
+	float m11 = -f;
+	float m22 = zfar/(znear - zfar);
+	float m23 = (znear*zfar)/(znear - zfar);
 
 	cc_mat4f_t m =
 	{
