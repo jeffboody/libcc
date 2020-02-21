@@ -24,52 +24,67 @@
 #ifndef cc_memory_H
 #define cc_memory_H
 
-void* cc_malloc(const char* func, int line, size_t size);
-void* cc_calloc(const char* func, int line, size_t count,
-                size_t size);
-void* cc_realloc(const char* func, int line, void* ptr,
-                 size_t size);
-void  cc_free(const char* func, int line, void* ptr);
-void  cc_meminfo(void);
+void*  cc_malloc_debug(const char* func, int line, size_t size);
+void*  cc_calloc_debug(const char* func, int line, size_t count,
+                       size_t size);
+void*  cc_realloc_debug(const char* func, int line, void* ptr,
+                        size_t size);
+void   cc_free_debug(const char* func, int line, void* ptr);
+void   cc_meminfo_debug(void);
+void*  cc_malloc(size_t size);
+void*  cc_calloc(size_t count, size_t size);
+void*  cc_realloc(void* ptr, size_t size);
+void   cc_free(void* ptr);
+size_t cc_memcount(void);
+void   cc_meminfo(void);
+size_t cc_memsize(void);
 
 #ifndef MALLOC
 	#ifdef MEMORY_DEBUG
-		#define MALLOC(...) (cc_malloc(__func__, __LINE__, __VA_ARGS__))
+		#define MALLOC(...) (cc_malloc_debug(__func__, __LINE__, __VA_ARGS__))
 	#else
-		#define MALLOC(...) (malloc(__VA_ARGS__))
+		#define MALLOC(...) (cc_malloc(__VA_ARGS__))
 	#endif
 #endif
 
 #ifndef CALLOC
 	#ifdef MEMORY_DEBUG
-		#define CALLOC(...) (cc_calloc(__func__, __LINE__, __VA_ARGS__))
+		#define CALLOC(...) (cc_calloc_debug(__func__, __LINE__, __VA_ARGS__))
 	#else
-		#define CALLOC(...) (calloc(__VA_ARGS__))
+		#define CALLOC(...) (cc_calloc(__VA_ARGS__))
 	#endif
 #endif
 
 #ifndef REALLOC
 	#ifdef MEMORY_DEBUG
-		#define REALLOC(...) (cc_realloc(__func__, __LINE__, __VA_ARGS__))
+		#define REALLOC(...) (cc_realloc_debug(__func__, __LINE__, __VA_ARGS__))
 	#else
-		#define REALLOC(...) (realloc(__VA_ARGS__))
+		#define REALLOC(...) (cc_realloc(__VA_ARGS__))
 	#endif
 #endif
 
 #ifndef FREE
 	#ifdef MEMORY_DEBUG
-		#define FREE(...) (cc_free(__func__, __LINE__, __VA_ARGS__))
+		#define FREE(...) (cc_free_debug(__func__, __LINE__, __VA_ARGS__))
 	#else
-		#define FREE(...) (free(__VA_ARGS__))
+		#define FREE(...) (cc_free(__VA_ARGS__))
 	#endif
+#endif
+
+#ifndef MEMCOUNT
+	#define MEMCOUNT(...) (cc_memcount())
 #endif
 
 #ifndef MEMINFO
 	#ifdef MEMORY_DEBUG
-		#define MEMINFO(...) (cc_meminfo())
+		#define MEMINFO(...) (cc_meminfo_debug())
 	#else
-		#define MEMINFO(...)
+		#define MEMINFO(...) (cc_meminfo())
 	#endif
+#endif
+
+#ifndef MEMSIZE
+	#define MEMSIZE(...) (cc_memsize())
 #endif
 
 #endif

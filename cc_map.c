@@ -29,8 +29,17 @@
 
 #define LOG_TAG "cc"
 #include "cc_map.h"
-#include "cc_memory.h"
 #include "cc_log.h"
+
+// memory allocated by cc_map cannot be tracked by
+// cc_malloc since it depends on cc_map
+#ifndef MALLOC
+	#define MALLOC(...) (malloc(__VA_ARGS__))
+#endif
+
+#ifndef FREE
+	#define FREE(...) (free(__VA_ARGS__))
+#endif
 
 /***********************************************************
 * private - mapIter                                        *

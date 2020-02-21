@@ -37,6 +37,15 @@
 
 #define CC_MEMORY_NAMELEN 64
 
+// The sizeof(cc_memory_t) needs to match the alignment
+// requirements of the platform. However there doesn't seem
+// to be a good platform independent technique to determine
+// this information.
+typedef struct
+{
+	size_t size;
+} cc_memory_t;
+
 typedef struct
 {
 	char      name[CC_MEMORY_NAMELEN];
@@ -55,11 +64,12 @@ typedef struct
 {
 	cc_map_t* map_ator;
 	cc_map_t* map_pinfo;
-	size_t    size;
 } cc_meminfo_t;
 
 pthread_mutex_t memory_mutex   = PTHREAD_MUTEX_INITIALIZER; 
 cc_meminfo_t*   memory_meminfo = NULL;
+size_t          memory_count   = 0;
+size_t          memory_size    = 0;
 
 /***********************************************************
 * private - cc_ator                                        *
@@ -210,8 +220,6 @@ static cc_meminfo_t* cc_meminfo_init(void)
 		goto fail_map_pinfo;
 	}
 
-	memory_meminfo->size = 0;
-
 	// success
 	return memory_meminfo;
 
@@ -286,7 +294,8 @@ cc_meminfo_add(cc_meminfo_t* self,
 		return;
 	}
 
-	self->size += size;
+	++memory_count;
+	memory_size += size;
 }
 
 static void
@@ -311,7 +320,8 @@ cc_meminfo_rem(cc_meminfo_t* self, const char* func,
 
 	cc_ator_rem(pinfo->ator_ref, pinfo);
 	cc_map_remove(self->map_pinfo, &hiter);
-	self->size -= pinfo->size;
+	--memory_count;
+	memory_size -= pinfo->size;
 	cc_pinfo_delete(&pinfo);
 }
 
@@ -322,7 +332,7 @@ static void cc_meminfo_meminfo(cc_meminfo_t* self)
 	LOGI("cnt_ator=%i, cnt_pinfo=%i, size=%i",
 	     cc_map_size(self->map_ator),
 	     cc_map_size(self->map_pinfo),
-	     (int) self->size);
+	     (int) memory_size);
 
 	cc_mapIter_t  hiterator;
 	cc_mapIter_t* hiter;
@@ -411,23 +421,24 @@ static void cc_memory_meminfo(void)
 * public                                                   *
 ***********************************************************/
 
-void* cc_malloc(const char* func, int line, size_t size)
+void* cc_malloc_debug(const char* func, int line,
+                      size_t size)
 {
 	void* ptr = malloc(size);
 	cc_memory_add(func, line, ptr, size);
 	return ptr;
 }
 
-void* cc_calloc(const char* func, int line, size_t count,
-                size_t size)
+void* cc_calloc_debug(const char* func, int line,
+                      size_t count, size_t size)
 {
 	void* ptr = calloc(count, size);
 	cc_memory_add(func, line, ptr, count*size);
 	return ptr;
 }
 
-void* cc_realloc(const char* func, int line, void* ptr,
-                 size_t size)
+void* cc_realloc_debug(const char* func, int line,
+                       void* ptr, size_t size)
 {
 	void* reptr = realloc(ptr, size);
 	cc_memory_rem(func, line, ptr);
@@ -435,14 +446,123 @@ void* cc_realloc(const char* func, int line, void* ptr,
 	return reptr;
 }
 
-void cc_free(const char* func, int line,
-               void* ptr)
+void cc_free_debug(const char* func, int line, void* ptr)
 {
 	cc_memory_rem(func, line, ptr);
 	free(ptr);
 }
 
-void cc_meminfo(void)
+void cc_meminfo_debug(void)
 {
 	cc_memory_meminfo();
+}
+
+void* cc_malloc(size_t size)
+{
+	cc_memory_t* mem;
+	mem = (cc_memory_t*)
+	      malloc(size + sizeof(cc_memory_t));
+	if(mem == NULL)
+	{
+		return NULL;
+	}
+	mem->size = size;
+
+	pthread_mutex_lock(&memory_mutex);
+	++memory_count;
+	memory_size += mem->size;
+	LOGD("mem=%p, size=%i, memory_size=%i",
+	     mem, (int) mem->size, memory_size);
+	pthread_mutex_unlock(&memory_mutex);
+
+	return (void*) mem + sizeof(cc_memory_t);
+}
+
+void* cc_calloc(size_t count, size_t size)
+{
+	cc_memory_t* mem;
+	mem = (cc_memory_t*)
+	      calloc(1, count*size + sizeof(cc_memory_t));
+	if(mem == NULL)
+	{
+		return NULL;
+	}
+	mem->size = count*size;
+
+	pthread_mutex_lock(&memory_mutex);
+	++memory_count;
+	memory_size += mem->size;
+	LOGD("mem=%p, size=%i, memory_size=%i",
+	     mem, (int) mem->size, memory_size);
+	pthread_mutex_unlock(&memory_mutex);
+
+	return (void*) mem + sizeof(cc_memory_t);
+}
+
+void* cc_realloc(void* ptr, size_t size)
+{
+	if(ptr == NULL)
+	{
+		return cc_malloc(size);
+	}
+
+	cc_memory_t* mem1  = (cc_memory_t*)
+	                     (ptr - sizeof(cc_memory_t));
+	size_t       size1 = mem1->size;
+
+	cc_memory_t* mem2;
+	mem2 = (cc_memory_t*)
+	       realloc((void*) mem1, size + sizeof(cc_memory_t));
+	mem2->size = size;
+
+	pthread_mutex_lock(&memory_mutex);
+	memory_size += mem2->size - size1;
+	LOGD("mem=%p, size=%i, memory_size=%i",
+	     mem2, (int) mem2->size, memory_size);
+	pthread_mutex_unlock(&memory_mutex);
+
+	return (void*) mem2 + sizeof(cc_memory_t);
+}
+
+void cc_free(void* ptr)
+{
+	if(ptr)
+	{
+		cc_memory_t* mem = ptr - sizeof(cc_memory_t);
+
+		pthread_mutex_lock(&memory_mutex);
+		--memory_count;
+		memory_size -= mem->size;
+		LOGD("mem=%p, size=%i, memory_size=%i",
+		     mem, (int) mem->size, memory_size);
+		pthread_mutex_unlock(&memory_mutex);
+
+		free(mem);
+	}
+}
+
+size_t cc_memcount(void)
+{
+	size_t count;
+	pthread_mutex_lock(&memory_mutex);
+	count = memory_count;
+	pthread_mutex_unlock(&memory_mutex);
+	return count;
+}
+
+void cc_meminfo(void)
+{
+	pthread_mutex_lock(&memory_mutex);
+	LOGI("count=%i, size=%i",
+	     (int) memory_count, (int) memory_size);
+	pthread_mutex_unlock(&memory_mutex);
+}
+
+size_t cc_memsize(void)
+{
+	size_t size;
+	pthread_mutex_lock(&memory_mutex);
+	size = memory_size;
+	pthread_mutex_unlock(&memory_mutex);
+	return size;
 }
