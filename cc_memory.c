@@ -32,6 +32,12 @@
 #include "cc_memory.h"
 
 /***********************************************************
+* protected                                                *
+***********************************************************/
+
+extern cc_map_t* cc_map_newCMalloc(void);
+
+/***********************************************************
 * private                                                  *
 ***********************************************************/
 
@@ -90,7 +96,7 @@ cc_ator_new(const char* name)
 
 	snprintf(self->name, CC_MEMORY_NAMELEN, "%s", name);
 
-	self->map_pinfo_ref = cc_map_new();
+	self->map_pinfo_ref = cc_map_newCMalloc();
 	if(self->map_pinfo_ref == NULL)
 	{
 		goto fail_map_pinfo_ref;
@@ -208,13 +214,13 @@ static cc_meminfo_t* cc_meminfo_init(void)
 		return NULL;
 	}
 
-	memory_meminfo->map_ator = cc_map_new();
+	memory_meminfo->map_ator = cc_map_newCMalloc();
 	if(memory_meminfo->map_ator == NULL)
 	{
 		goto fail_map_ator;
 	}
 
-	memory_meminfo->map_pinfo = cc_map_new();
+	memory_meminfo->map_pinfo = cc_map_newCMalloc();
 	if(memory_meminfo->map_pinfo == NULL)
 	{
 		goto fail_map_pinfo;

@@ -45,6 +45,7 @@ typedef struct
 
 typedef struct
 {
+	int flags;
 	int size;
 	int nodes;
 	cc_mapNode_t* head;

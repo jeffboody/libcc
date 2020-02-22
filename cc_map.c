@@ -29,17 +29,10 @@
 
 #define LOG_TAG "cc"
 #include "cc_map.h"
+#include "cc_memory.h"
 #include "cc_log.h"
 
-// memory allocated by cc_map cannot be tracked by
-// cc_malloc since it depends on cc_map
-#ifndef MALLOC
-	#define MALLOC(...) (malloc(__VA_ARGS__))
-#endif
-
-#ifndef FREE
-	#define FREE(...) (free(__VA_ARGS__))
-#endif
+#define CC_MAP_FLAG_CMALLOC 1
 
 /***********************************************************
 * private - mapIter                                        *
@@ -84,7 +77,17 @@ cc_mapNode_new(cc_mapNode_t* prev, cc_map_t* map, char k)
 	// prev may be NULL for head
 
 	cc_mapNode_t* self;
-	self = (cc_mapNode_t*) MALLOC(sizeof(cc_mapNode_t));
+	if(map->flags & CC_MAP_FLAG_CMALLOC)
+	{
+		self = (cc_mapNode_t*)
+		       malloc(sizeof(cc_mapNode_t));
+	}
+	else
+	{
+		self = (cc_mapNode_t*)
+		       MALLOC(sizeof(cc_mapNode_t));
+	}
+
 	if(self == NULL)
 	{
 		LOGE("MALLOC failed");
@@ -115,7 +118,14 @@ cc_mapNode_delete(cc_mapNode_t** _self, cc_map_t* map)
 		--map->nodes;
 		cc_mapNode_delete(&self->next, map);
 		cc_mapNode_delete(&self->down, map);
-		FREE(self);
+		if(map->flags & CC_MAP_FLAG_CMALLOC)
+		{
+			free(self);
+		}
+		else
+		{
+			FREE(self);
+		}
 		*_self = NULL;
 	}
 }
@@ -163,25 +173,51 @@ cc_map_clean(cc_map_t* self, cc_mapNode_t* node)
 	cc_mapNode_delete(&node, self);
 }
 
-/***********************************************************
-* public                                                   *
-***********************************************************/
-
-cc_map_t* cc_map_new(void)
+static cc_map_t* cc_map_newFlags(int flags)
 {
 	cc_map_t* self;
-	self = (cc_map_t*) MALLOC(sizeof(cc_map_t));
+	if(flags & CC_MAP_FLAG_CMALLOC)
+	{
+		self = (cc_map_t*) malloc(sizeof(cc_map_t));
+	}
+	else
+	{
+		self = (cc_map_t*) MALLOC(sizeof(cc_map_t));
+	}
+
 	if(self == NULL)
 	{
 		LOGE("MALLOC failed");
 		return NULL;
 	}
 
+	self->flags = flags;
 	self->size  = 0;
 	self->nodes = 0;
 	self->head  = NULL;
 
 	return self;
+}
+
+/***********************************************************
+* protected                                                *
+***********************************************************/
+
+// the newCMalloc protected function is intended to be
+// used by cc_memory debug feature which depends on cc_map
+// but cannot use the cc_memory tracking without deadlocks
+cc_map_t* cc_map_newCMalloc(void)
+{
+	return cc_map_newFlags(CC_MAP_FLAG_CMALLOC);
+}
+
+/***********************************************************
+* public                                                   *
+***********************************************************/
+
+cc_map_t* cc_map_new(void)
+{
+	return cc_map_newFlags(0);
 }
 
 void cc_map_delete(cc_map_t** _self)
@@ -197,7 +233,14 @@ void cc_map_delete(cc_map_t** _self)
 		}
 
 		cc_mapNode_delete(&self->head, self);
-		FREE(self);
+		if(self->flags & CC_MAP_FLAG_CMALLOC)
+		{
+			free(self);
+		}
+		else
+		{
+			FREE(self);
+		}
 		*_self = NULL;
 	}
 }
