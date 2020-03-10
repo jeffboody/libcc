@@ -38,5 +38,7 @@ typedef struct
 
 int cc_fplane_clipsphere(const cc_fplane_t* self,
                          const cc_sphere_t* s);
+int cc_fplane_clippoint(const cc_fplane_t* self,
+                        const cc_vec3f_t* pt);
 
 #endif

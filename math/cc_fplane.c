@@ -47,3 +47,22 @@ int cc_fplane_clipsphere(const cc_fplane_t* self,
 
 	return 0;
 }
+
+int cc_fplane_clippoint(const cc_fplane_t* self,
+                        const cc_vec3f_t* pt)
+{
+	ASSERT(self);
+	ASSERT(pt);
+
+	if((cc_plane_distance(&self->near,   pt) < 0.0f) ||
+	   (cc_plane_distance(&self->far,    pt) < 0.0f) ||
+	   (cc_plane_distance(&self->left,   pt) < 0.0f) ||
+	   (cc_plane_distance(&self->right,  pt) < 0.0f) ||
+	   (cc_plane_distance(&self->top,    pt) < 0.0f) ||
+	   (cc_plane_distance(&self->bottom, pt) < 0.0f))
+	{
+		return 1;
+	}
+
+	return 0;
+}
