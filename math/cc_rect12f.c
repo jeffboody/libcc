@@ -100,6 +100,23 @@ int cc_rect1f_intersect(const cc_rect1f_t* a,
 	return 0;
 }
 
+int cc_rect1f_equals(const cc_rect1f_t* self,
+                     const cc_rect1f_t* rect)
+{
+	ASSERT(self);
+	ASSERT(rect);
+
+	if((self->t == rect->t) &&
+	   (self->l == rect->l) &&
+	   (self->w == rect->w) &&
+	   (self->h == rect->h))
+	{
+		return 1;
+	}
+
+	return 0;
+}
+
 void cc_rect2f_init(cc_rect2f_t* self,
                     float t, float l, float b, float r)
 {
@@ -212,4 +229,21 @@ int cc_rect2f_intersect(const cc_rect2f_t* a,
 	}
 
 	return 1;
+}
+
+int cc_rect2f_equals(const cc_rect2f_t* self,
+                     const cc_rect2f_t* rect)
+{
+	ASSERT(self);
+	ASSERT(rect);
+
+	if((self->t == rect->t) &&
+	   (self->l == rect->l) &&
+	   (self->b == rect->b) &&
+	   (self->r == rect->r))
+	{
+		return 1;
+	}
+
+	return 0;
 }

@@ -77,6 +77,21 @@ void cc_vec2f_copy(const cc_vec2f_t* self, cc_vec2f_t* copy)
 	copy->y = self->y;
 }
 
+int cc_vec2f_equals(const cc_vec2f_t* self,
+                    const cc_vec2f_t* v)
+{
+	ASSERT(self);
+	ASSERT(copy);
+
+	if((self->x == v->x) &&
+	   (self->y == v->y))
+	{
+		return 1;
+	}
+
+	return 0;
+}
+
 float cc_vec2f_mag(const cc_vec2f_t* self)
 {
 	ASSERT(self);

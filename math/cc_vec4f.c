@@ -84,6 +84,23 @@ void cc_vec4f_copy(const cc_vec4f_t* self, cc_vec4f_t* copy)
 	copy->w = self->w;
 }
 
+int cc_vec4f_equals(const cc_vec4f_t* self,
+                    const cc_vec4f_t* v)
+{
+	ASSERT(self);
+	ASSERT(copy);
+
+	if((self->x == v->x) &&
+	   (self->y == v->y) &&
+	   (self->z == v->z) &&
+	   (self->w == v->w))
+	{
+		return 1;
+	}
+
+	return 0;
+}
+
 float cc_vec4f_mag(const cc_vec4f_t* self)
 {
 	ASSERT(self);

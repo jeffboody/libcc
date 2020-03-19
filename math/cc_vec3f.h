@@ -42,6 +42,8 @@ void  cc_vec3f_load(cc_vec3f_t* self, float x, float y,
                     float z);
 void  cc_vec3f_copy(const cc_vec3f_t* self,
                     cc_vec3f_t* copy);
+int   cc_vec3f_equals(const cc_vec3f_t* self,
+                      const cc_vec3f_t* v);
 float cc_vec3f_mag(const cc_vec3f_t* self);
 void  cc_vec3f_addv(cc_vec3f_t* self, const cc_vec3f_t* v);
 void  cc_vec3f_addv_copy(const cc_vec3f_t* self,

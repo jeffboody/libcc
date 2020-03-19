@@ -40,6 +40,8 @@ void        cc_vec2f_delete(cc_vec2f_t** _self);
 void  cc_vec2f_load(cc_vec2f_t* self, float x, float y);
 void  cc_vec2f_copy(const cc_vec2f_t* self,
                     cc_vec2f_t* copy);
+int   cc_vec2f_equals(const cc_vec2f_t* self,
+                      const cc_vec2f_t* v);
 float cc_vec2f_mag(const cc_vec2f_t* self);
 void  cc_vec2f_addv(cc_vec2f_t* self, const cc_vec2f_t* v);
 void  cc_vec2f_addv_copy(const cc_vec2f_t* self,

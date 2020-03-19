@@ -52,6 +52,8 @@ int  cc_rect1f_contains(const cc_rect1f_t* self,
 int cc_rect1f_intersect(const cc_rect1f_t* a,
                         const cc_rect1f_t* b,
                         cc_rect1f_t* c);
+int cc_rect1f_equals(const cc_rect1f_t* self,
+                     const cc_rect1f_t* rect);
 
 void cc_rect2f_init(cc_rect2f_t* self,
                     float t, float l,
@@ -65,5 +67,7 @@ int  cc_rect2f_contains(const cc_rect2f_t* self,
 int cc_rect2f_intersect(const cc_rect2f_t* a,
                         const cc_rect2f_t* b,
                         cc_rect2f_t* c);
+int cc_rect2f_equals(const cc_rect2f_t* self,
+                     const cc_rect2f_t* rect);
 
 #endif

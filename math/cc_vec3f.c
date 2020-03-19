@@ -82,6 +82,22 @@ void cc_vec3f_copy(const cc_vec3f_t* self,
 	copy->z = self->z;
 }
 
+int cc_vec3f_equals(const cc_vec3f_t* self,
+                    const cc_vec3f_t* v)
+{
+	ASSERT(self);
+	ASSERT(copy);
+
+	if((self->x == v->x) &&
+	   (self->y == v->y) &&
+	   (self->z == v->z))
+	{
+		return 1;
+	}
+
+	return 0;
+}
+
 float cc_vec3f_mag(const cc_vec3f_t* self)
 {
 	ASSERT(self);

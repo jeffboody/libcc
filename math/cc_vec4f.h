@@ -60,6 +60,8 @@ void  cc_vec4f_load(cc_vec4f_t* self, float x, float y,
                     float z, float w);
 void  cc_vec4f_copy(const cc_vec4f_t* self,
                     cc_vec4f_t* copy);
+int   cc_vec4f_equals(const cc_vec4f_t* self,
+                      const cc_vec4f_t* v);
 float cc_vec4f_mag(const cc_vec4f_t* self);
 void  cc_vec4f_addv(cc_vec4f_t* self,
                     const cc_vec4f_t* v);
