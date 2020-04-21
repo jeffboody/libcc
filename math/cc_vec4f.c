@@ -88,7 +88,7 @@ int cc_vec4f_equals(const cc_vec4f_t* self,
                     const cc_vec4f_t* v)
 {
 	ASSERT(self);
-	ASSERT(copy);
+	ASSERT(v);
 
 	if((self->x == v->x) &&
 	   (self->y == v->y) &&
