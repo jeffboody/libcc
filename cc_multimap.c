@@ -81,7 +81,17 @@ void cc_multimap_discard(cc_multimap_t* self)
 {
 	ASSERT(self);
 
-	cc_map_discard(self->map);
+	cc_mapIter_t  miterator;
+	cc_mapIter_t* miter;
+	cc_list_t*    list;
+	miter = cc_map_head(self->map, &miterator);
+	while(miter)
+	{
+		list = (cc_list_t*)
+		       cc_map_remove(self->map, &miter);
+		cc_list_discard(list);
+		cc_list_delete(&list);
+	}
 }
 
 int cc_multimap_size(const cc_multimap_t* self)
