@@ -576,3 +576,15 @@ size_t cc_memsize(void)
 	pthread_mutex_unlock(&memory_mutex);
 	return size;
 }
+
+size_t cc_memsizeptr(void* ptr)
+{
+	size_t size = 0;
+	if(ptr)
+	{
+		cc_memory_t* mem = ptr - sizeof(cc_memory_t);
+		size = mem->size;
+	}
+
+	return size;
+}

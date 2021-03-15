@@ -38,6 +38,7 @@ void   cc_free(void* ptr);
 size_t cc_memcount(void);
 void   cc_meminfo(void);
 size_t cc_memsize(void);
+size_t cc_memsizeptr(void* ptr);
 
 #ifndef MALLOC
 	#ifdef MEMORY_DEBUG
@@ -85,6 +86,10 @@ size_t cc_memsize(void);
 
 #ifndef MEMSIZE
 	#define MEMSIZE(...) (cc_memsize())
+#endif
+
+#ifndef MEMSIZEOF
+	#define MEMSIZEPTR(...) (cc_memsizeptr(__VA_ARGS__))
 #endif
 
 #endif
