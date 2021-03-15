@@ -519,6 +519,10 @@ void* cc_realloc(void* ptr, size_t size)
 	cc_memory_t* mem2;
 	mem2 = (cc_memory_t*)
 	       realloc((void*) mem1, size + sizeof(cc_memory_t));
+	if(mem2 == NULL)
+	{
+		return NULL;
+	}
 	mem2->size = size;
 
 	pthread_mutex_lock(&memory_mutex);
