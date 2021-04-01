@@ -5,6 +5,7 @@ add_compile_options(-Wall)
 
 if(CC_USE_MATH)
     set(SOURCE_MATH
+        math/cc_pow2n.c
         math/cc_orientation.c
         math/cc_quaternion.c
         math/cc_plane.c

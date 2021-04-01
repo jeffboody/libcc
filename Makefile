@@ -11,6 +11,7 @@ CLASSES = \
 	cc_workq
 ifeq ($(CC_USE_MATH),1)
 	CLASSES += \
+		math/cc_pow2n       \
 		math/cc_orientation \
 		math/cc_quaternion  \
 		math/cc_plane       \
