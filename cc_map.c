@@ -21,6 +21,8 @@
  *
  */
 
+#include <inttypes.h>
+#include <limits.h>
 #include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -30,77 +32,84 @@
 #define LOG_TAG "cc"
 #include "cc_map.h"
 #include "cc_memory.h"
+#include "cc_mumurhash3.h"
 #include "cc_log.h"
 
 #define CC_MAP_FLAG_CMALLOC 1
 
-/***********************************************************
-* private - mapIter                                        *
-***********************************************************/
+#define CC_MAP_KEYLEN 256
 
-static void
-cc_mapIter_init(cc_mapIter_t* self, cc_mapNode_t* node)
-{
-	ASSERT(self);
-	ASSERT(node);
+#define CC_MAP_CAPACITY 16
 
-	self->depth   = 0;
-	self->key[0]  = node->k;
-	self->key[1]  = '\0';
-	self->node[0] = node;
-}
+#define CC_MAP_IDX(map, hash) (hash/map->elements)
 
-static void
-cc_mapIter_update(cc_mapIter_t* self, int d,
-                  cc_mapNode_t* node)
-{
-	ASSERT(self);
-	ASSERT(d >= 0);
-	ASSERT(d < (CC_MAP_KEYLEN - 1));
-	ASSERT(node);
-
-	self->depth      = d;
-	self->key[d]     = node->k;
-	self->key[d + 1] = '\0';
-	self->node[d]    = node;
-}
+// protected
+cc_list_t* cc_list_newCMalloc(void);
 
 /***********************************************************
 * private - mapNode                                        *
 ***********************************************************/
 
+typedef struct cc_mapNode_s
+{
+	uint32_t    hash;
+	const void* val;
+	int         len;
+	// uint8_t  key[];
+} cc_mapNode_t;
+
+static size_t cc_mapNode_sizeof(cc_mapNode_t* self)
+{
+	ASSERT(self);
+
+	return sizeof(cc_mapNode_t) + self->len;
+}
+
+static uint8_t* cc_mapNode_key(cc_mapNode_t* self)
+{
+	ASSERT(self);
+
+	return (uint8_t*)
+	       (((void*) self) + sizeof(cc_mapNode_t));
+}
+
 static cc_mapNode_t*
-cc_mapNode_new(cc_mapNode_t* prev, cc_map_t* map, char k)
+cc_mapNode_new(cc_map_t* map, const void* val,
+               uint32_t hash, int idx, int len,
+               const uint8_t* key)
 {
 	ASSERT(map);
+	ASSERT(val);
+	ASSERT(len > 0);
+	ASSERT(key);
 
-	// prev may be NULL for head
+	size_t size;
+	size = sizeof(cc_mapNode_t) + len;
 
 	cc_mapNode_t* self;
 	if(map->flags & CC_MAP_FLAG_CMALLOC)
 	{
-		self = (cc_mapNode_t*)
-		       malloc(sizeof(cc_mapNode_t));
+		self = (cc_mapNode_t*) calloc(1, size);
 	}
 	else
 	{
-		self = (cc_mapNode_t*)
-		       MALLOC(sizeof(cc_mapNode_t));
+		self = (cc_mapNode_t*) CALLOC(1, size);
 	}
 
 	if(self == NULL)
 	{
-		LOGE("MALLOC failed");
+		LOGE("CALLOC failed");
 		return NULL;
 	}
 
-	self->prev = prev;
-	self->next = NULL;
-	self->down = NULL;
-	self->val  = NULL;
-	self->k    = k;
+	self->hash = hash;
+	self->val  = val;
+	self->len  = len;
 
-	++map->nodes;
+	uint8_t* dst = cc_mapNode_key(self);
+	memcpy((void*) dst, (const void*) key, len);
+
+	map->nodes_size += cc_mapNode_sizeof(self);
 
 	return self;
 }
@@ -114,10 +123,8 @@ cc_mapNode_delete(cc_mapNode_t** _self, cc_map_t* map)
 	cc_mapNode_t* self = *_self;
 	if(self)
 	{
-		// prev is a reference
-		--map->nodes;
-		cc_mapNode_delete(&self->next, map);
-		cc_mapNode_delete(&self->down, map);
+		map->nodes_size -= cc_mapNode_sizeof(self);
+
 		if(map->flags & CC_MAP_FLAG_CMALLOC)
 		{
 			free(self);
@@ -130,73 +137,300 @@ cc_mapNode_delete(cc_mapNode_t** _self, cc_map_t* map)
 	}
 }
 
-/***********************************************************
-* private map                                              *
-***********************************************************/
-
-static void
-cc_map_clean(cc_map_t* self, cc_mapNode_t* node)
+static int
+cc_mapNode_cmp(cc_mapNode_t* self,
+               uint32_t hash, int len, const uint8_t* key)
 {
 	ASSERT(self);
-	ASSERT(node);
+	ASSERT(key);
 
-	// check if the node is an endpoint or traversal node
-	if(node->val || node->down)
+	// use hash for primary comparison
+	if(self->hash > hash)
 	{
-		return;
+		return 1;
 	}
-
-	// detach empty nodes
-	cc_mapNode_t* prev = node->prev;
-	cc_mapNode_t* next = node->next;
-	if(prev == NULL)
+	else if(self->hash < hash)
 	{
-		self->head = next;
-	}
-	else if(prev->down == node)
-	{
-		prev->down = next;
-		cc_map_clean(self, prev);
-	}
-	else
-	{
-		prev->next = next;
+		return -1;
 	}
 
-	if(next)
+	// use key len for secondary comparison
+	// longer keys are greater than shorter keys
+	if(self->len > len)
 	{
-		next->prev = prev;
+		return 1;
+	}
+	else if(self->len < len)
+	{
+		return -1;
 	}
 
-	node->prev = NULL;
-	node->next = NULL;
-	cc_mapNode_delete(&node, self);
+	const uint64_t* key64a;
+	const uint64_t* key64b;
+	key64a = (const uint64_t*) cc_mapNode_key(self);
+	key64b = (const uint64_t*) key;
+
+	// otherwise compare key bytes
+	// compare initial bytes 8 at a time
+	int cnt = len/8;
+	int idx = 0;
+	while(cnt)
+	{
+		if(key64a[idx] > key64b[idx])
+		{
+			return 1;
+		}
+		else if(key64a[idx] < key64b[idx])
+		{
+			return -1;
+		}
+
+		++idx;
+		--cnt;
+	}
+
+	const uint8_t* key8a = (const uint8_t*) key64a;
+	const uint8_t* key8b = (const uint8_t*) key64b;
+
+	// compare remaining bytes one at a time
+	cnt = len % 8;
+	idx = 8*idx;
+	while(cnt)
+	{
+		if(key8a[idx] > key8b[idx])
+		{
+			return 1;
+		}
+		else if(key8a[idx] < key8b[idx])
+		{
+			return -1;
+		}
+
+		++idx;
+		--cnt;
+	}
+
+	return 0;
 }
+
+/***********************************************************
+* private                                                  *
+***********************************************************/
 
 static cc_map_t* cc_map_newFlags(int flags)
 {
 	cc_map_t* self;
 	if(flags & CC_MAP_FLAG_CMALLOC)
 	{
-		self = (cc_map_t*) malloc(sizeof(cc_map_t));
+		self = (cc_map_t*) calloc(1, sizeof(cc_map_t));
 	}
 	else
 	{
-		self = (cc_map_t*) MALLOC(sizeof(cc_map_t));
+		self = (cc_map_t*) CALLOC(1, sizeof(cc_map_t));
 	}
 
 	if(self == NULL)
 	{
-		LOGE("MALLOC failed");
+		LOGE("CALLOC failed");
 		return NULL;
 	}
 
-	self->flags = flags;
-	self->size  = 0;
-	self->nodes = 0;
-	self->head  = NULL;
+	self->seed     = random();
+	self->capacity = CC_MAP_CAPACITY;
+	self->elements = (uint32_t)
+	                 (((uint64_t) UINT_MAX + 1)/
+	                  ((uint64_t) self->capacity));
+	self->buckets  = (cc_listIter_t**)
+	                 CALLOC(self->capacity,
+	                        sizeof(cc_listIter_t*));
+	if(self->buckets == NULL)
+	{
+		goto fail_buckets;
+	}
 
+	if(flags & CC_MAP_FLAG_CMALLOC)
+	{
+		self->nodes = cc_list_newCMalloc();
+	}
+	else
+	{
+		self->nodes = cc_list_new();
+	}
+
+	if(self->nodes == NULL)
+	{
+		goto fail_nodes;
+	}
+
+	// success
 	return self;
+
+	// failure
+	fail_nodes:
+	{
+		if(flags & CC_MAP_FLAG_CMALLOC)
+		{
+			free(self->buckets);
+		}
+		else
+		{
+			FREE(self->buckets);
+		}
+	}
+	fail_buckets:
+	{
+		if(flags & CC_MAP_FLAG_CMALLOC)
+		{
+			free(self);
+		}
+		else
+		{
+			FREE(self);
+		}
+	}
+	return NULL;
+}
+
+static void
+cc_map_grow(cc_map_t* self)
+{
+	ASSERT(self);
+
+	// check capacity
+	if(cc_list_size(self->nodes) <= self->capacity)
+	{
+		return;
+	}
+
+	int    capacity1 = self->capacity;
+	int    capacity2 = 2*self->capacity;
+	size_t size2     = capacity2*sizeof(cc_listIter_t*);
+
+	// try to grow the capacity
+	cc_listIter_t** buckets2;
+	buckets2 = (cc_listIter_t**)
+	           REALLOC(self->buckets, size2);
+	if(buckets2 == NULL)
+	{
+		return;
+	}
+	self->capacity = capacity2;
+	self->elements = (uint32_t)
+	                 (((uint64_t) UINT_MAX + 1)/
+	                  ((uint64_t) self->capacity));
+	self->buckets  = buckets2;
+
+	// update buckets
+	int i;
+	int j;
+	int k;
+	int idx;
+	cc_listIter_t* iter;
+	cc_mapNode_t*  node;
+	for(k = (capacity1 - 1); k >= 0; k -= 1)
+	{
+		iter = self->buckets[k];
+
+		i = 2*k;
+		j = i + 1;
+		self->buckets[i] = NULL;
+		self->buckets[j] = NULL;
+
+		if(iter == NULL)
+		{
+			continue;
+		}
+
+		// update bucket[i]
+		node = (cc_mapNode_t*) cc_list_peekIter(iter);
+		idx  = CC_MAP_IDX(self, node->hash);
+		if(idx == i)
+		{
+			self->buckets[i] = iter;
+		}
+
+		// update bucket[j]
+		while(iter)
+		{
+			node = (cc_mapNode_t*) cc_list_peekIter(iter);
+			idx  = CC_MAP_IDX(self, node->hash);
+			if(idx == j)
+			{
+				self->buckets[j] = iter;
+				break;
+			}
+			else if(idx > j)
+			{
+				break;
+			}
+
+			iter = cc_list_next(iter);
+		}
+	}
+}
+
+static int
+cc_map_addAt(cc_map_t* self, cc_mapIter_t* miter,
+             uint32_t hash, int idx, const void* val,
+             int len, const uint8_t* key)
+{
+	ASSERT(self);
+	ASSERT(miter);
+	ASSERT(val);
+	ASSERT(key);
+
+	cc_mapNode_t* node;
+	node = cc_mapNode_new(self, val, hash, idx, len, key);
+	if(node == NULL)
+	{
+		return 0;
+	}
+
+	// insert/append the node
+	int replace = 0;
+	if(miter->iter)
+	{
+		if((self->buckets[idx] == NULL) ||
+		   (self->buckets[idx] == miter->iter))
+		{
+			replace = 1;
+		}
+
+		miter->iter = cc_list_insert(self->nodes, miter->iter,
+		                             (const void*) node);
+	}
+	else
+	{
+		if(self->buckets[idx] == NULL)
+		{
+			replace = 1;
+		}
+
+		miter->iter = cc_list_append(self->nodes, NULL,
+		                             (const void*) node);
+	}
+
+	// check insert/append
+	if(miter->iter == NULL)
+	{
+		goto fail_at;
+	}
+
+	// update bucket
+	if(replace)
+	{
+		self->buckets[idx] = miter->iter;
+	}
+
+	cc_map_grow(self);
+
+	// success
+	return 1;
+
+	// failure
+	fail_at:
+		cc_mapNode_delete(&node, self);
+	return 0;
 }
 
 /***********************************************************
@@ -227,18 +461,15 @@ void cc_map_delete(cc_map_t** _self)
 	cc_map_t* self = *_self;
 	if(self)
 	{
-		if(self->size > 0)
-		{
-			LOGE("memory leak detected: size=%i", self->size);
-		}
-
-		cc_mapNode_delete(&self->head, self);
+		cc_list_delete(&self->nodes);
 		if(self->flags & CC_MAP_FLAG_CMALLOC)
 		{
+			free(self->buckets);
 			free(self);
 		}
 		else
 		{
+			FREE(self->buckets);
 			FREE(self);
 		}
 		*_self = NULL;
@@ -249,181 +480,123 @@ void cc_map_discard(cc_map_t* self)
 {
 	ASSERT(self);
 
-	self->size = 0;
-	cc_mapNode_delete(&self->head, self);
+	size_t size = self->capacity*sizeof(cc_listIter_t*);
+	memset((void*) self->buckets, 0, size);
+
+	cc_mapNode_t* node;
+	cc_listIter_t* iter = cc_list_head(self->nodes);
+	while(iter)
+	{
+		node = (cc_mapNode_t*)
+		       cc_list_remove(self->nodes, &iter);
+		cc_mapNode_delete(&node, self);
+	}
 }
 
 int cc_map_size(const cc_map_t* self)
 {
 	ASSERT(self);
 
-	return self->size;
+	return cc_list_size(self->nodes);
 }
 
 size_t cc_map_sizeof(const cc_map_t* self)
 {
 	ASSERT(self);
 
-	return sizeof(cc_map_t) +
-	       self->nodes*sizeof(cc_mapNode_t);
+	// sizeof map + nodes + buckets + list
+	size_t size = sizeof(cc_map_t);
+	size += self->nodes_size;
+	size += self->capacity*sizeof(cc_listIter_t*);
+	size += cc_list_sizeof(self->nodes);
+	return size;
 }
 
 cc_mapIter_t*
-cc_map_head(const cc_map_t* self, cc_mapIter_t* iter)
+cc_map_head(const cc_map_t* self, cc_mapIter_t* miter)
 {
 	ASSERT(self);
-	ASSERT(iter);
+	ASSERT(miter);
 
-	if(self->head == NULL)
+	miter->iter = cc_list_head(self->nodes);
+	if(miter->iter == NULL)
 	{
 		return NULL;
 	}
 
-	cc_mapIter_init(iter, self->head);
-
-	// find an endpoint
-	if(self->head->val)
-	{
-		return iter;
-	}
-	return cc_map_next(iter);
+	return miter;
 }
 
-cc_mapIter_t* cc_map_next(cc_mapIter_t* iter)
+cc_mapIter_t* cc_map_next(cc_mapIter_t* miter)
 {
-	ASSERT(iter);
+	ASSERT(miter);
 
-	int d = iter->depth;
-	cc_mapNode_t* node = iter->node[d];
-	if(node->down)
+	miter->iter = cc_list_next(miter->iter);
+	if(miter->iter == NULL)
 	{
-		// down
-		++d;
-		node = node->down;
-		cc_mapIter_update(iter, d, node);
-	}
-	else if(node->next)
-	{
-		// sideways
-		node = node->next;
-		cc_mapIter_update(iter, d, node);
-	}
-	else
-	{
-		// up
-		while(1)
-		{
-			--d;
-			if(d < 0)
-			{
-				return NULL;
-			}
-
-			node = iter->node[d];
-			if(node->next)
-			{
-				node = node->next;
-				cc_mapIter_update(iter, d, node);
-				break;
-			}
-		}
+		return NULL;
 	}
 
-	// find an endpoint
-	if(node->val)
-	{
-		return iter;
-	}
-	return cc_map_next(iter);
+	return miter;
 }
 
-const void* cc_map_val(const cc_mapIter_t* iter)
+const void* cc_map_val(const cc_mapIter_t* miter)
 {
-	ASSERT(iter);
+	ASSERT(miter);
 
-	int d = iter->depth;
-	cc_mapNode_t* node = iter->node[d];
+	cc_mapNode_t* node;
+	node = (cc_mapNode_t*)
+	       cc_list_peekIter(miter->iter);
 	return node->val;
 }
 
-const char* cc_map_key(const cc_mapIter_t* iter)
-{
-	ASSERT(iter);
-
-	return iter->key;
-}
-
 const void*
-cc_map_find(const cc_map_t* self, cc_mapIter_t* iter,
+cc_map_find(const cc_map_t* self, cc_mapIter_t* miter,
             const char* key)
 {
 	ASSERT(self);
-	ASSERT(iter);
+	ASSERT(miter);
 	ASSERT(key);
 
-	int len = strlen(key);
-	if((len >= CC_MAP_KEYLEN) || (len == 0))
-	{
-		LOGE("invalid len=%i", len);
-		return NULL;
-	}
+	uint32_t       seed = self->seed;
+	int            len  = strlen(key) + 1;
+	const uint8_t* key8 = (const uint8_t*) key;
+	uint32_t       hash = cc_mumurhash3(seed, len, key8);
+	int            idx  = CC_MAP_IDX(self, hash);
 
-	// check for empty map
-	if(self->head == NULL)
+	miter->iter = self->buckets[idx];
+	while(miter->iter)
 	{
-		return NULL;
-	}
-
-	cc_mapIter_init(iter, self->head);
-
-	// traverse the map
-	int d = 0;
-	cc_mapNode_t* node = self->head;
-	while(d < len)
-	{
-		if(key[d] == iter->key[d])
+		cc_mapNode_t* node;
+		node = (cc_mapNode_t*)
+		       cc_list_peekIter(miter->iter);
+		if(CC_MAP_IDX(self, node->hash) != idx)
 		{
-			if(d == (len - 1))
-			{
-				// success
-				return node->val;
-			}
-			else if(node->down)
-			{
-				// down
-				++d;
-				node = node->down;
-				cc_mapIter_update(iter, d, node);
-				continue;
-			}
-
-			return NULL;
-		}
-		else if((key[d] < iter->key[d]) ||
-		        (node->next == NULL))
-		{
-			// not found
 			return NULL;
 		}
 
-		// traverse to the next decision point
-		while(node->next && (key[d] > iter->key[d]))
+		int cmp = cc_mapNode_cmp(node, hash, len, key8);
+		if(cmp == 0)
 		{
-			// sideways
-			node = node->next;
-			cc_mapIter_update(iter, d, node);
+			return node->val;
 		}
+		else if(cmp > 0)
+		{
+			return NULL;
+		}
+
+		miter->iter = cc_list_next(miter->iter);
 	}
 
 	return NULL;
 }
 
 const void*
-cc_map_findf(const cc_map_t* self, cc_mapIter_t* iter,
+cc_map_findf(const cc_map_t* self, cc_mapIter_t* miter,
              const char* fmt, ...)
 {
 	ASSERT(self);
-	ASSERT(iter);
+	ASSERT(miter);
 	ASSERT(fmt);
 
 	char key[CC_MAP_KEYLEN];
@@ -432,151 +605,78 @@ cc_map_findf(const cc_map_t* self, cc_mapIter_t* iter,
 	vsnprintf(key, CC_MAP_KEYLEN, fmt, argptr);
 	va_end(argptr);
 
-	return cc_map_find(self, iter, key);
+	return cc_map_find(self, miter, key);
 }
 
-int cc_map_add(cc_map_t* self, const void* val,
-               const char* key)
+int cc_map_add(cc_map_t* self,
+               const void* val, const char* key)
 {
 	ASSERT(self);
 	ASSERT(val);
 	ASSERT(key);
 
-	int len = strlen(key);
-	if((len >= CC_MAP_KEYLEN) || (len == 0))
+	cc_mapIter_t  miterator;
+	cc_mapIter_t* miter = &miterator;
+
+	uint32_t       seed = self->seed;
+	int            len  = strlen(key) + 1;
+	const uint8_t* key8 = (const uint8_t*) key;
+	uint32_t       hash = cc_mumurhash3(seed, len, key8);
+	int            idx  = CC_MAP_IDX(self, hash);
+
+	// add node to existing bucket
+	miter->iter = self->buckets[idx];
+	if(miter->iter)
 	{
-		LOGE("invalid key=%s, len=%i", key, len);
-		return 0;
+		while(miter->iter)
+		{
+			cc_mapNode_t* node;
+			node = (cc_mapNode_t*)
+			       cc_list_peekIter(miter->iter);
+			if(CC_MAP_IDX(self, node->hash) != idx)
+			{
+				return cc_map_addAt(self, miter, hash, idx,
+				                    val, len, key8);
+			}
+
+			int cmp = cc_mapNode_cmp(node, hash, len, key8);
+			if(cmp == 0)
+			{
+				return 0;
+			}
+			else if(cmp > 0)
+			{
+				return cc_map_addAt(self, miter, hash, idx,
+				                    val, len, key8);
+			}
+
+			miter->iter = cc_list_next(miter->iter);
+		}
+
+		return cc_map_addAt(self, miter, hash, idx,
+		                    val, len, key8);
 	}
 
-	int created = 0;
-	if(self->head == NULL)
+	// add node to an empty bucket
+	// find insert position from next used bucket
+	int i;
+	for(i = idx + 1; i < self->capacity; ++i)
 	{
-		self->head = cc_mapNode_new(NULL, self, key[0]);
-		if(self->head == NULL)
+		miter->iter = self->buckets[i];
+		if(miter->iter)
 		{
-			return 0;
-		}
-
-		created = 1;
-	}
-
-	cc_mapIter_t  iterator;
-	cc_mapIter_t* iter = &iterator;
-	cc_mapIter_init(&iterator, self->head);
-
-	// traverse the map
-	int d = 0;
-	cc_mapNode_t* node = self->head;
-	while(d < len)
-	{
-		if(key[d] == iter->key[d])
-		{
-			if(d == (len - 1))
-			{
-				if(node->val)
-				{
-					// hash already contains key
-					return 0;
-				}
-
-				// success
-				++self->size;
-				node->val = val;
-				return 1;
-			}
-			else if(node->down == NULL)
-			{
-				// insert a new down node
-				cc_mapNode_t* down;
-				down = cc_mapNode_new(node, self, key[d + 1]);
-				if(down == NULL)
-				{
-					cc_map_clean(self, node);
-					goto fail_add;
-				}
-				node->down = down;
-			}
-
-			// down
-			++d;
-			node = node->down;
-			cc_mapIter_update(iter, d, node);
-			continue;
-		}
-		else if(key[d] < iter->key[d])
-		{
-			// insert a new prev node
-			cc_mapNode_t* prev;
-			prev = cc_mapNode_new(node->prev, self, key[d]);
-			if(prev == NULL)
-			{
-				cc_map_clean(self, node);
-				goto fail_add;
-			}
-			prev->next = node;
-
-			if(node->prev)
-			{
-				if(node->prev->next == node)
-				{
-					node->prev->next = prev;
-				}
-				else
-				{
-					node->prev->down = prev;
-				}
-			}
-			else
-			{
-				self->head = prev;
-			}
-			node->prev = prev;
-
-			// sideways
-			node = prev;
-			cc_mapIter_update(iter, d, node);
-			continue;
-		}
-		else if(node->next == NULL)
-		{
-			// append a new next node
-			cc_mapNode_t* next;
-			next = cc_mapNode_new(node, self, key[d]);
-			if(next == NULL)
-			{
-				cc_map_clean(self, node);
-				goto fail_add;
-			}
-			node->next = next;
-
-			node = next;
-			cc_mapIter_update(iter, d, node);
-			continue;
-		}
-
-		// traverse to the next decision point
-		while(node->next && (key[d] > iter->key[d]))
-		{
-			// sideways
-			node = node->next;
-			cc_mapIter_update(iter, d, node);
+			return cc_map_addAt(self, miter, hash, idx,
+			                    val, len, key8);
 		}
 	}
 
-	// the key/val can always be added before d equals len
-	ASSERT(0);
-
-	// failure
-	fail_add:
-		if(created)
-		{
-			cc_mapNode_delete(&self->head, self);
-		}
-	return 0;
+	miter->iter = NULL;
+	return cc_map_addAt(self, miter, hash, idx,
+	                    val, len, key8);
 }
 
-int cc_map_addf(cc_map_t* self, const void* val,
+int cc_map_addf(cc_map_t* self,
+                const void* val,
                 const char* fmt, ...)
 {
 	ASSERT(self);
@@ -593,39 +693,47 @@ int cc_map_addf(cc_map_t* self, const void* val,
 }
 
 const void*
-cc_map_replace(cc_mapIter_t* iter, const void*  val)
-{
-	ASSERT(iter);
-	ASSERT(val);
-
-	int d = iter->depth;
-	cc_mapNode_t* node = iter->node[d];
-
-	const void* old = node->val;
-	node->val = val;
-	return old;
-}
-
-const void*
-cc_map_remove(cc_map_t* self, cc_mapIter_t** _iter)
+cc_map_remove(cc_map_t* self, cc_mapIter_t** _miter)
 {
 	ASSERT(self);
-	ASSERT(_iter);
-	ASSERT(*_iter);
+	ASSERT(_miter);
+	ASSERT(*_miter);
 
-	cc_mapIter_t* iter = *_iter;
+	cc_mapIter_t* miter;
+	cc_mapNode_t* node;
+	const void*   val;
 
-	// save node and update iter
-	int d = iter->depth;
-	cc_mapNode_t* node = iter->node[d];
-	*_iter = cc_map_next(iter);
+	miter = *_miter;
+	node  = (cc_mapNode_t*)
+	        cc_list_peekIter(miter->iter);
+	val   = node->val;
 
-	// clear value and clean traversal nodes
-	const void* val = node->val;
-	node->val = NULL;
-	cc_map_clean(self, node);
+	// update bucket pointer
+	int idx = CC_MAP_IDX(self, node->hash);
+	if(self->buckets[idx] == miter->iter)
+	{
+		cc_listIter_t* next = cc_list_next(miter->iter);
+		if(next)
+		{
+			// bucket index must match
+			cc_mapNode_t* tmp;
+			tmp = (cc_mapNode_t*)
+			      cc_list_peekIter(next);
+			if(CC_MAP_IDX(self, tmp->hash) != idx)
+			{
+				next = NULL;
+			}
+		}
+		self->buckets[idx] = next;
+	}
 
-	--self->size;
+	// update nodes/iter
+	cc_list_remove(self->nodes, &miter->iter);
+	cc_mapNode_delete(&node, self);
+	if(miter->iter == NULL)
+	{
+		*_miter = NULL;
+	}
 
 	return val;
 }

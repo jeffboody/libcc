@@ -28,6 +28,8 @@
 #include "cc_log.h"
 #include "cc_memory.h"
 
+#define CC_LIST_FLAG_CMALLOC 1
+
 /***********************************************************
 * private                                                  *
 ***********************************************************/
@@ -161,16 +163,23 @@ cc_listIter_new(cc_list_t* list, cc_listIter_t* prev,
 	ASSERT(data);
 
 	cc_listIter_t* self;
-	self = (cc_listIter_t*)
-	       MALLOC(sizeof(cc_listIter_t));
+	if(list->flags & CC_LIST_FLAG_CMALLOC)
+	{
+		self = (cc_listIter_t*)
+		       calloc(1, sizeof(cc_listIter_t));
+	}
+	else
+	{
+		self = (cc_listIter_t*)
+		       CALLOC(1, sizeof(cc_listIter_t));
+	}
+
 	if(self == NULL)
 	{
-		LOGE("MALLOC failed");
+		LOGE("CALLOC failed");
 		return NULL;
 	}
 
-	self->next = NULL;
-	self->prev = NULL;
 	self->data = data;
 	cc_listIter_add(self, list, prev, next);
 	return self;
@@ -190,11 +199,55 @@ cc_listIter_delete(cc_listIter_t** _self, cc_list_t* list)
 		next = self->next;
 		data = self->data;
 		cc_listIter_remove(self, list);
-		FREE(self);
+
+		if(list->flags & CC_LIST_FLAG_CMALLOC)
+		{
+			free(self);
+		}
+		else
+		{
+			FREE(self);
+		}
+
 		*_self = next;
 	}
 
 	return data;
+}
+
+static cc_list_t* cc_list_newFlags(int flags)
+{
+	cc_list_t* self;
+	if(flags & CC_LIST_FLAG_CMALLOC)
+	{
+		self = (cc_list_t*) calloc(1, sizeof(cc_list_t));
+	}
+	else
+	{
+		self = (cc_list_t*) CALLOC(1, sizeof(cc_list_t));
+	}
+
+	if(self == NULL)
+	{
+		LOGE("CALLOC failed");
+		return NULL;
+	}
+
+	self->flags = flags;
+
+	return self;
+}
+
+/***********************************************************
+* protected                                                *
+***********************************************************/
+
+// the newCMalloc protected function is intended to be
+// used by cc_memory debug feature which depends on cc_list
+// but cannot use the cc_memory tracking without deadlocks
+cc_list_t* cc_list_newCMalloc(void)
+{
+	return cc_list_newFlags(CC_LIST_FLAG_CMALLOC);
 }
 
 /***********************************************************
@@ -203,19 +256,7 @@ cc_listIter_delete(cc_listIter_t** _self, cc_list_t* list)
 
 cc_list_t* cc_list_new(void)
 {
-	cc_list_t* self;
-	self = (cc_list_t*) MALLOC(sizeof(cc_list_t));
-	if(self == NULL)
-	{
-		LOGE("MALLOC failed");
-		return NULL;
-	}
-
-	self->size = 0;
-	self->head = NULL;
-	self->tail = NULL;
-
-	return self;
+	return cc_list_newFlags(0);
 }
 
 void cc_list_delete(cc_list_t** _self)
@@ -231,7 +272,15 @@ void cc_list_delete(cc_list_t** _self)
 			cc_list_discard(self);
 		}
 
-		FREE(self);
+		if(self->flags & CC_LIST_FLAG_CMALLOC)
+		{
+			free(self);
+		}
+		else
+		{
+			FREE(self);
+		}
+
 		*_self = NULL;
 	}
 }

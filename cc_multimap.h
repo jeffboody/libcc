@@ -52,7 +52,6 @@ cc_multimapIter_t* cc_multimap_nextItem(cc_multimapIter_t* iter);
 cc_multimapIter_t* cc_multimap_nextList(cc_multimapIter_t* iter);
 const void*        cc_multimap_val(const cc_multimapIter_t* iter);
 const cc_list_t*   cc_multimap_list(const cc_multimapIter_t* iter);
-const char*        cc_multimap_key(const cc_multimapIter_t* iter);
 const cc_list_t*   cc_multimap_find(const cc_multimap_t* self,
                                     cc_multimapIter_t* iter,
                                     const char* key);
@@ -65,8 +64,6 @@ int                cc_multimap_add(cc_multimap_t* self,
 int                cc_multimap_addf(cc_multimap_t* self,
                                     const void* val,
                                     const char* fmt, ...);
-const void*        cc_multimap_replace(cc_multimapIter_t* iter,
-                                       const void* val);
 const void*        cc_multimap_remove(cc_multimap_t* self,
                                       cc_multimapIter_t** _iter);
 

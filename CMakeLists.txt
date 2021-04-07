@@ -32,6 +32,7 @@ add_library(cc
             cc_map.c
             cc_memory.c
             cc_multimap.c
+            cc_mumurhash3.c
             cc_timestamp.c
             cc_unit.c
             cc_workq.c

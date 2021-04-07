@@ -1,13 +1,14 @@
 TARGET  = libcc.a
 CLASSES = \
-	cc_jobq      \
-	cc_list      \
-	cc_log       \
-	cc_map       \
-	cc_memory    \
-	cc_multimap  \
-	cc_timestamp \
-	cc_unit      \
+	cc_jobq       \
+	cc_list       \
+	cc_log        \
+	cc_map        \
+	cc_memory     \
+	cc_multimap   \
+	cc_mumurhash3 \
+	cc_timestamp  \
+	cc_unit       \
 	cc_workq
 ifeq ($(CC_USE_MATH),1)
 	CLASSES += \

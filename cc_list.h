@@ -35,6 +35,7 @@ typedef struct cc_listIter_s
 
 typedef struct
 {
+	int            flags;
 	int            size;
 	cc_listIter_t* head;
 	cc_listIter_t* tail;

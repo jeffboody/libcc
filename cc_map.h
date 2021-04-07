@@ -24,31 +24,28 @@
 #ifndef cc_map_H
 #define cc_map_H
 
-#define CC_MAP_KEYLEN 256
+#include <inttypes.h>
 
-typedef struct cc_mapNode_s
-{
-	struct cc_mapNode_s* prev;
-	struct cc_mapNode_s* next;
-	struct cc_mapNode_s* down;
-
-	const void* val;
-	char k;
-} cc_mapNode_t;
+#include "cc_list.h"
 
 typedef struct
 {
-	int  depth;
-	char key[CC_MAP_KEYLEN];
-	cc_mapNode_t* node[CC_MAP_KEYLEN];
+	cc_listIter_t* iter;
 } cc_mapIter_t;
 
 typedef struct
 {
-	int flags;
-	int size;
-	int nodes;
-	cc_mapNode_t* head;
+	int      flags;
+	uint32_t seed;
+
+	// buckets
+	int             capacity;
+	int             elements;
+	cc_listIter_t** buckets;
+
+	// nodes
+	size_t     nodes_size;
+	cc_list_t* nodes;
 } cc_map_t;
 
 cc_map_t*     cc_map_new(void);
@@ -57,15 +54,14 @@ void          cc_map_discard(cc_map_t* self);
 int           cc_map_size(const cc_map_t* self);
 size_t        cc_map_sizeof(const cc_map_t* self);
 cc_mapIter_t* cc_map_head(const cc_map_t* self,
-                          cc_mapIter_t* iter);
-cc_mapIter_t* cc_map_next(cc_mapIter_t* iter);
-const void*   cc_map_val(const cc_mapIter_t* iter);
-const char*   cc_map_key(const cc_mapIter_t* iter);
+                          cc_mapIter_t* miter);
+cc_mapIter_t* cc_map_next(cc_mapIter_t* miter);
+const void*   cc_map_val(const cc_mapIter_t* miter);
 const void*   cc_map_find(const cc_map_t* self,
-                          cc_mapIter_t* iter,
-                          const char* key);
+                         cc_mapIter_t* miter,
+                         const char* key);
 const void*   cc_map_findf(const cc_map_t* self,
-                           cc_mapIter_t* iter,
+                           cc_mapIter_t* miter,
                            const char* fmt, ...);
 int           cc_map_add(cc_map_t* self,
                          const void* val,
@@ -73,9 +69,7 @@ int           cc_map_add(cc_map_t* self,
 int           cc_map_addf(cc_map_t* self,
                           const void* val,
                           const char* fmt, ...);
-const void*   cc_map_replace(cc_mapIter_t* iter,
-                             const void* val);
 const void*   cc_map_remove(cc_map_t* self,
-                            cc_mapIter_t** _iter);
+                            cc_mapIter_t** _miter);
 
 #endif

@@ -193,13 +193,6 @@ cc_multimap_list(const cc_multimapIter_t* iter)
 	return (const cc_list_t*) cc_map_val(iter->hiter);
 }
 
-const char* cc_multimap_key(const cc_multimapIter_t* iter)
-{
-	ASSERT(iter);
-
-	return cc_map_key(iter->hiter);
-}
-
 const cc_list_t*
 cc_multimap_find(const cc_multimap_t* self,
                  cc_multimapIter_t* iter,
@@ -322,19 +315,6 @@ int cc_multimap_addf(cc_multimap_t* self, const void* val,
 	va_end(argptr);
 
 	return cc_multimap_add(self, val, key);
-}
-
-const void*
-cc_multimap_replace(cc_multimapIter_t* iter,
-                    const void*  val)
-{
-	ASSERT(iter);
-	ASSERT(val);
-
-	cc_list_t* list;
-	list = (cc_list_t*)
-	       cc_map_val(iter->hiter);
-	return cc_list_replace(list, iter->item, val);
 }
 
 const void*
