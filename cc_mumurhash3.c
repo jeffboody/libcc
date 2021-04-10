@@ -36,12 +36,7 @@
 
 #define	FORCE_INLINE inline __attribute__((always_inline))
 
-inline uint32_t rotl32 ( uint32_t x, int8_t r )
-{
-  return (x << r) | (x >> (32 - r));
-}
-
-#define	ROTL32(x,y)	rotl32(x,y)
+#define	ROTL32(x,r)	((x << r) | (x >> (32 - r)))
 
 // Block read - if your platform needs to do endian-swapping
 // or can only handle aligned reads, do the conversion here
