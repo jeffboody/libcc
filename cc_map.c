@@ -591,18 +591,24 @@ const void* cc_map_val(const cc_mapIter_t* miter)
 }
 
 const void*
-cc_map_find(const cc_map_t* self, cc_mapIter_t* miter,
-            const char* key)
+cc_map_findp(const cc_map_t* self, cc_mapIter_t* miter,
+             int len, const void* key)
 {
 	ASSERT(self);
 	ASSERT(miter);
 	ASSERT(key);
 
-	uint32_t       seed = self->seed;
-	int            len  = strlen(key) + 1;
 	const uint8_t* key8 = (const uint8_t*) key;
-	uint32_t       hash = cc_mumurhash3(seed, len, key8);
-	int            idx  = CC_MAP_IDX(self, hash);
+	if(len == 0)
+	{
+		// pointer itself is the key
+		len  = sizeof(void*);
+		key8 = (uint8_t*) &key;
+	}
+
+	uint32_t seed = self->seed;
+	uint32_t hash = cc_mumurhash3(seed, len, key8);
+	int      idx  = CC_MAP_IDX(self, hash);
 
 	miter->iter = self->buckets[idx];
 	while(miter->iter)
@@ -632,6 +638,18 @@ cc_map_find(const cc_map_t* self, cc_mapIter_t* miter,
 }
 
 const void*
+cc_map_find(const cc_map_t* self, cc_mapIter_t* miter,
+            const char* key)
+{
+	ASSERT(self);
+	ASSERT(miter);
+	ASSERT(key);
+
+	int len = strlen(key) + 1;
+	return cc_map_findp(self, miter, len, (const void*) key);
+}
+
+const void*
 cc_map_findf(const cc_map_t* self, cc_mapIter_t* miter,
              const char* fmt, ...)
 {
@@ -645,11 +663,12 @@ cc_map_findf(const cc_map_t* self, cc_mapIter_t* miter,
 	vsnprintf(key, CC_MAP_KEYLEN, fmt, argptr);
 	va_end(argptr);
 
-	return cc_map_find(self, miter, key);
+	int len = strlen(key) + 1;
+	return cc_map_findp(self, miter, len, (const void*) key);
 }
 
-int cc_map_add(cc_map_t* self,
-               const void* val, const char* key)
+int cc_map_addp(cc_map_t* self, const void* val,
+                int len, const void* key)
 {
 	ASSERT(self);
 	ASSERT(val);
@@ -658,11 +677,17 @@ int cc_map_add(cc_map_t* self,
 	cc_mapIter_t  miterator;
 	cc_mapIter_t* miter = &miterator;
 
-	uint32_t       seed = self->seed;
-	int            len  = strlen(key) + 1;
 	const uint8_t* key8 = (const uint8_t*) key;
-	uint32_t       hash = cc_mumurhash3(seed, len, key8);
-	int            idx  = CC_MAP_IDX(self, hash);
+	if(len == 0)
+	{
+		// pointer itself is the key
+		len  = sizeof(void*);
+		key8 = (uint8_t*) &key;
+	}
+
+	uint32_t seed = self->seed;
+	uint32_t hash = cc_mumurhash3(seed, len, key8);
+	int      idx  = CC_MAP_IDX(self, hash);
 
 	// add node to existing bucket
 	miter->iter = self->buckets[idx];
@@ -715,6 +740,17 @@ int cc_map_add(cc_map_t* self,
 	                    val, len, key8);
 }
 
+int cc_map_add(cc_map_t* self,
+               const void* val, const char* key)
+{
+	ASSERT(self);
+	ASSERT(val);
+	ASSERT(key);
+
+	int len = strlen(key) + 1;
+	return cc_map_addp(self, val, len, (const void*) key);
+}
+
 int cc_map_addf(cc_map_t* self,
                 const void* val,
                 const char* fmt, ...)
@@ -729,7 +765,8 @@ int cc_map_addf(cc_map_t* self,
 	vsnprintf(key, CC_MAP_KEYLEN, fmt, argptr);
 	va_end(argptr);
 
-	return cc_map_add(self, val, key);
+	int len = strlen(key) + 1;
+	return cc_map_addp(self, val, len, (const void*) key);
 }
 
 const void*

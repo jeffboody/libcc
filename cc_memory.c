@@ -133,9 +133,9 @@ cc_ator_add(cc_ator_t* self, cc_pinfo_t* pinfo_ref)
 	ASSERT(self);
 	ASSERT(pinfo_ref);
 
-	if(cc_map_addf(self->map_pinfo_ref,
+	if(cc_map_addp(self->map_pinfo_ref,
 	               (const void*) pinfo_ref,
-	               "%p", pinfo_ref->ptr) == 0)
+	               0, pinfo_ref->ptr) == 0)
 	{
 		return 0;
 	}
@@ -151,7 +151,7 @@ cc_ator_rem(cc_ator_t* self, cc_pinfo_t* pinfo_ref)
 
 	cc_mapIter_t  hiterator;
 	cc_mapIter_t* hiter = &hiterator;
-	if(cc_map_findf(self->map_pinfo_ref, hiter, "%p",
+	if(cc_map_findp(self->map_pinfo_ref, hiter, 0,
 	                pinfo_ref->ptr))
 	{
 		self->size -= pinfo_ref->size;
@@ -280,8 +280,8 @@ cc_meminfo_add(cc_meminfo_t* self,
 	}
 
 	// add pinfo to meminfo
-	if(cc_map_addf(self->map_pinfo, (const void*) pinfo,
-	               "%p", pinfo->ptr) == 0)
+	if(cc_map_addp(self->map_pinfo, (const void*) pinfo,
+	               0, pinfo->ptr) == 0)
 	{
 		cc_pinfo_delete(&pinfo);
 		return;
@@ -291,7 +291,7 @@ cc_meminfo_add(cc_meminfo_t* self,
 	if(cc_ator_add(ator, pinfo) == 0)
 	{
 		cc_mapIter_t* hiter = &hiterator;
-		if(cc_map_findf(self->map_pinfo, hiter, "%p",
+		if(cc_map_findp(self->map_pinfo, hiter, 0,
 		                pinfo->ptr))
 		{
 			cc_map_remove(self->map_pinfo, &hiter);
@@ -317,7 +317,7 @@ cc_meminfo_rem(cc_meminfo_t* self, const char* func,
 	hiter = &hiterator;
 	cc_pinfo_t* pinfo;
 	pinfo = (cc_pinfo_t*)
-	        cc_map_findf(self->map_pinfo, hiter, "%p", ptr);
+	        cc_map_findp(self->map_pinfo, hiter, 0, ptr);
 	if(pinfo == NULL)
 	{
 		LOGW("invalid %s@%i ptr=%p", func, line, ptr);

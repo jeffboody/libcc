@@ -57,12 +57,20 @@ cc_mapIter_t* cc_map_head(const cc_map_t* self,
                           cc_mapIter_t* miter);
 cc_mapIter_t* cc_map_next(cc_mapIter_t* miter);
 const void*   cc_map_val(const cc_mapIter_t* miter);
+const void*   cc_map_findp(const cc_map_t* self,
+                           cc_mapIter_t* miter,
+                           int len,
+                           const void* key);
 const void*   cc_map_find(const cc_map_t* self,
                          cc_mapIter_t* miter,
                          const char* key);
 const void*   cc_map_findf(const cc_map_t* self,
                            cc_mapIter_t* miter,
                            const char* fmt, ...);
+int           cc_map_addp(cc_map_t* self,
+                          const void* val,
+                          int len,
+                          const void* key);
 int           cc_map_add(cc_map_t* self,
                          const void* val,
                          const char* key);
