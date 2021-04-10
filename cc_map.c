@@ -189,12 +189,32 @@ cc_mapNode_cmp(cc_mapNode_t* self,
 		--cnt;
 	}
 
+	const uint32_t* key32a = (const uint32_t*) key64a;
+	const uint32_t* key32b = (const uint32_t*) key64b;
+
+	// compare bytes 4 at a time
+	cnt = len % 8;
+	idx = 2*idx;
+	if(cnt >= 4)
+	{
+		if(key32a[idx] > key32b[idx])
+		{
+			return 1;
+		}
+		else if(key32a[idx] < key32b[idx])
+		{
+			return -1;
+		}
+
+		++idx;
+		cnt -= 4;
+	}
+
 	const uint8_t* key8a = (const uint8_t*) key64a;
 	const uint8_t* key8b = (const uint8_t*) key64b;
 
 	// compare remaining bytes one at a time
-	cnt = len % 8;
-	idx = 8*idx;
+	idx = 4*idx;
 	while(cnt)
 	{
 		if(key8a[idx] > key8b[idx])
