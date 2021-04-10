@@ -178,6 +178,15 @@ cc_multimapIter_t* cc_multimap_nextList(cc_multimapIter_t* iter)
 	return iter;
 }
 
+const void* cc_multimap_key(const cc_multimapIter_t* iter,
+                            int* _len)
+{
+	ASSERT(iter);
+	ASSERT(_key);
+
+	return cc_map_key(iter->hiter, _len);
+}
+
 const void* cc_multimap_val(const cc_multimapIter_t* iter)
 {
 	ASSERT(iter);

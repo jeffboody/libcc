@@ -56,6 +56,8 @@ size_t        cc_map_sizeof(const cc_map_t* self);
 cc_mapIter_t* cc_map_head(const cc_map_t* self,
                           cc_mapIter_t* miter);
 cc_mapIter_t* cc_map_next(cc_mapIter_t* miter);
+const void*   cc_map_key(const cc_mapIter_t* miter,
+                         int* _len);
 const void*   cc_map_val(const cc_mapIter_t* miter);
 const void*   cc_map_findp(const cc_map_t* self,
                            cc_mapIter_t* miter,
