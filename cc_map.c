@@ -235,14 +235,25 @@ static cc_map_t* cc_map_newFlags(int flags)
 		return NULL;
 	}
 
+	self->flags    = flags;
 	self->seed     = random();
 	self->capacity = CC_MAP_CAPACITY;
 	self->elements = (uint32_t)
 	                 (((uint64_t) UINT_MAX + 1)/
 	                  ((uint64_t) self->capacity));
-	self->buckets  = (cc_listIter_t**)
-	                 CALLOC(self->capacity,
-	                        sizeof(cc_listIter_t*));
+	if(flags & CC_MAP_FLAG_CMALLOC)
+	{
+		self->buckets = (cc_listIter_t**)
+		                calloc(self->capacity,
+		                       sizeof(cc_listIter_t*));
+	}
+	else
+	{
+		self->buckets = (cc_listIter_t**)
+		                CALLOC(self->capacity,
+		                       sizeof(cc_listIter_t*));
+	}
+
 	if(self->buckets == NULL)
 	{
 		goto fail_buckets;
@@ -308,8 +319,17 @@ cc_map_grow(cc_map_t* self)
 
 	// try to grow the capacity
 	cc_listIter_t** buckets2;
-	buckets2 = (cc_listIter_t**)
-	           REALLOC(self->buckets, size2);
+	if(self->flags & CC_MAP_FLAG_CMALLOC)
+	{
+		buckets2 = (cc_listIter_t**)
+		           realloc(self->buckets, size2);
+	}
+	else
+	{
+		buckets2 = (cc_listIter_t**)
+		           REALLOC(self->buckets, size2);
+	}
+
 	if(buckets2 == NULL)
 	{
 		return;
