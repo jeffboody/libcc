@@ -34,9 +34,9 @@
 * copyright to this source code.                           *
 ***********************************************************/
 
-#define	FORCE_INLINE inline __attribute__((always_inline))
+#define FORCE_INLINE inline __attribute__((always_inline))
 
-#define	ROTL32(x,r)	((x << r) | (x >> (32 - r)))
+#define ROTL32(x,r) ((x << r) | (x >> (32 - r)))
 
 // Block read - if your platform needs to do endian-swapping
 // or can only handle aligned reads, do the conversion here
@@ -122,8 +122,8 @@ MurmurHash3_x86_32 ( const void * key, int len,
 uint32_t
 cc_mumurhash3(uint32_t seed, int len, const uint8_t* key)
 {
-	uint32_t hash;
-	MurmurHash3_x86_32((const void*) key, len,
-	                   seed, (void*) &hash);
-	return hash;
+  uint32_t hash;
+  MurmurHash3_x86_32((const void*) key, len,
+                     seed, (void*) &hash);
+  return hash;
 }
