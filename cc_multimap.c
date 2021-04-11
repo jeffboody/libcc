@@ -182,7 +182,7 @@ const void* cc_multimap_key(const cc_multimapIter_t* iter,
                             int* _len)
 {
 	ASSERT(iter);
-	ASSERT(_key);
+	ASSERT(_len);
 
 	return cc_map_key(iter->hiter, _len);
 }
