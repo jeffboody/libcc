@@ -50,10 +50,12 @@ cc_list_t* cc_list_newCMalloc(void);
 * private - mapNode                                        *
 ***********************************************************/
 
+// note that key must be 8-byte aligned for
+// cc_mumurhash3 and cc_mapNode_cmp to work
 typedef struct cc_mapNode_s
 {
-	uint32_t    hash;
 	const void* val;
+	uint32_t    hash;
 	int         len;
 	// uint8_t  key[];
 } cc_mapNode_t;
@@ -613,12 +615,25 @@ cc_map_findp(const cc_map_t* self, cc_mapIter_t* miter,
 	ASSERT(miter);
 	ASSERT(key);
 
+	// 8-byte aligned temp buffer (if needed)
+	uint64_t key64[CC_MAP_KEYLEN/8];
+
 	const uint8_t* key8 = (const uint8_t*) key;
-	if(len == 0)
+	if(len > CC_MAP_KEYLEN)
+	{
+		return NULL;
+	}
+	else if(len == 0)
 	{
 		// pointer itself is the key
 		len  = sizeof(void*);
 		key8 = (uint8_t*) &key;
+	}
+	else if((((uintptr_t) key) % 8) != 0)
+	{
+		// force 8-byte alignment
+		memcpy((void*) key64, key, len);
+		key8 = (uint8_t*) key64;
 	}
 
 	uint32_t seed = self->seed;
@@ -692,12 +707,25 @@ int cc_map_addp(cc_map_t* self, const void* val,
 	cc_mapIter_t  miterator;
 	cc_mapIter_t* miter = &miterator;
 
+	// 8-byte aligned temp buffer (if needed)
+	uint64_t key64[CC_MAP_KEYLEN/8];
+
 	const uint8_t* key8 = (const uint8_t*) key;
-	if(len == 0)
+	if(len > CC_MAP_KEYLEN)
+	{
+		return 0;
+	}
+	else if(len == 0)
 	{
 		// pointer itself is the key
 		len  = sizeof(void*);
 		key8 = (uint8_t*) &key;
+	}
+	else if((((uintptr_t) key) % 8) != 0)
+	{
+		// force 8-byte alignment
+		memcpy((void*) key64, key, len);
+		key8 = (uint8_t*) key64;
 	}
 
 	uint32_t seed = self->seed;
