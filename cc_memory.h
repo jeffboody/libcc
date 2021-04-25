@@ -88,7 +88,7 @@ size_t cc_memsizeptr(void* ptr);
 	#define MEMSIZE(...) (cc_memsize())
 #endif
 
-#ifndef MEMSIZEOF
+#ifndef MEMSIZEPTR
 	#define MEMSIZEPTR(...) (cc_memsizeptr(__VA_ARGS__))
 #endif
 
