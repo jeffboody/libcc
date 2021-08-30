@@ -63,6 +63,8 @@ cc_jobq_t* cc_jobq_new(void* owner, int thread_count,
                        int thread_priority,
                        cc_jobqRun_fn run_fn);
 void        cc_jobq_delete(cc_jobq_t** _self);
+void        cc_jobq_pause(cc_jobq_t* self);
+void        cc_jobq_resume(cc_jobq_t* self);
 void        cc_jobq_finish(cc_jobq_t* self);
 int         cc_jobq_run(cc_jobq_t* self, void* task);
 int         cc_jobq_pending(cc_jobq_t* self);

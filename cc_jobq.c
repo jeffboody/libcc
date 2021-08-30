@@ -36,7 +36,8 @@
 
 // jobq run state
 const int CC_JOBQ_STATE_RUNNING = 0;
-const int CC_JOBQ_STATE_STOP    = 1;
+const int CC_JOBQ_STATE_PAUSED  = 1;
+const int CC_JOBQ_STATE_STOP    = 2;
 
 static void* cc_jobq_thread(void* arg)
 {
@@ -58,8 +59,9 @@ static void* cc_jobq_thread(void* arg)
 	while(1)
 	{
 		// pending for an event
-		while((cc_list_size(self->queue_pending) == 0) &&
-		      (self->state == CC_JOBQ_STATE_RUNNING))
+		while((self->state == CC_JOBQ_STATE_PAUSED) ||
+		      ((cc_list_size(self->queue_pending) == 0) &&
+		       (self->state == CC_JOBQ_STATE_RUNNING)))
 		{
 			pthread_cond_wait(&self->cond_pending,
 			                  &self->mutex);
@@ -247,25 +249,44 @@ void cc_jobq_delete(cc_jobq_t** _self)
 	}
 }
 
+void cc_jobq_pause(cc_jobq_t* self)
+{
+	ASSERT(self);
+
+	pthread_mutex_lock(&self->mutex);
+	self->state = CC_JOBQ_STATE_PAUSED;
+	pthread_mutex_unlock(&self->mutex);
+}
+
+void cc_jobq_resume(cc_jobq_t* self)
+{
+	ASSERT(self);
+
+	pthread_mutex_lock(&self->mutex);
+	self->state = CC_JOBQ_STATE_RUNNING;
+	pthread_cond_broadcast(&self->cond_pending);
+	pthread_mutex_unlock(&self->mutex);
+}
+
 void cc_jobq_finish(cc_jobq_t* self)
 {
 	ASSERT(self);
 
 	pthread_mutex_lock(&self->mutex);
 
-	while(1)
+	// resume jobq if needed
+	if(self->state == CC_JOBQ_STATE_PAUSED)
 	{
-		if(cc_list_size(self->queue_pending) ||
-		   cc_list_size(self->queue_active))
-		{
-			// wait for pending/active tasks to complete
-			pthread_cond_wait(&self->cond_complete,
-			                  &self->mutex);
-		}
-		else
-		{
-			break;
-		}
+		self->state = CC_JOBQ_STATE_RUNNING;
+		pthread_cond_broadcast(&self->cond_pending);
+	}
+
+	// wait for pending/active tasks to complete
+	while(cc_list_size(self->queue_pending) ||
+		  cc_list_size(self->queue_active))
+	{
+		pthread_cond_wait(&self->cond_complete,
+		                  &self->mutex);
 	}
 
 	pthread_mutex_unlock(&self->mutex);
@@ -288,7 +309,10 @@ int cc_jobq_run(cc_jobq_t* self, void* task)
 	}
 
 	// wake up jobq thread
-	pthread_cond_broadcast(&self->cond_pending);
+	if(self->state == CC_JOBQ_STATE_RUNNING)
+	{
+		pthread_cond_broadcast(&self->cond_pending);
+	}
 
 	pthread_mutex_unlock(&self->mutex);
 
