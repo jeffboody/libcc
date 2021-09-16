@@ -81,12 +81,10 @@ void cc_multimap_discard(cc_multimap_t* self)
 {
 	ASSERT(self);
 
-	cc_mapIter_t  miterator;
-	cc_mapIter_t* miter;
-	cc_list_t*    list;
-	miter = cc_map_head(self->map, &miterator);
+	cc_mapIter_t* miter = cc_map_head(self->map);
 	while(miter)
 	{
+		cc_list_t* list;
 		list = (cc_list_t*)
 		       cc_map_remove(self->map, &miter);
 		cc_list_discard(list);
@@ -110,129 +108,128 @@ size_t cc_multimap_sizeof(const cc_multimap_t* self)
 
 cc_multimapIter_t*
 cc_multimap_head(const cc_multimap_t* self,
-                 cc_multimapIter_t* iter)
+                 cc_multimapIter_t* mmiter)
 {
 	ASSERT(self);
-	ASSERT(iter);
+	ASSERT(mmiter);
 
-	iter->hiter = cc_map_head(self->map, &iter->hiterator);
-	if(iter->hiter == NULL)
+	mmiter->miter = cc_map_head(self->map);
+	if(mmiter->miter == NULL)
 	{
 		return NULL;
 	}
 
-	cc_list_t* list = (cc_list_t*) cc_map_val(iter->hiter);
-	iter->item = cc_list_head(list);
+	cc_list_t* list = (cc_list_t*) cc_map_val(mmiter->miter);
+	mmiter->iter = cc_list_head(list);
 
-	return iter;
+	return mmiter;
 }
 
-cc_multimapIter_t* cc_multimap_next(cc_multimapIter_t* iter)
+cc_multimapIter_t* cc_multimap_next(cc_multimapIter_t* mmiter)
 {
-	ASSERT(iter);
+	ASSERT(mmiter);
 
-	iter->item = cc_list_next(iter->item);
-	if(iter->item)
+	mmiter->iter = cc_list_next(mmiter->iter);
+	if(mmiter->iter)
 	{
-		return iter;
+		return mmiter;
 	}
 
-	iter->hiter = cc_map_next(iter->hiter);
-	if(iter->hiter == NULL)
+	mmiter->miter = cc_map_next(mmiter->miter);
+	if(mmiter->miter == NULL)
 	{
 		return NULL;
 	}
 
-	cc_list_t* list = (cc_list_t*) cc_map_val(iter->hiter);
-	iter->item = cc_list_head(list);
+	cc_list_t* list = (cc_list_t*) cc_map_val(mmiter->miter);
+	mmiter->iter = cc_list_head(list);
 
-	return iter;
+	return mmiter;
 }
 
-cc_multimapIter_t* cc_multimap_nextItem(cc_multimapIter_t* iter)
+cc_multimapIter_t* cc_multimap_nextItem(cc_multimapIter_t* mmiter)
 {
-	ASSERT(iter);
+	ASSERT(mmiter);
 
-	iter->item = cc_list_next(iter->item);
-	if(iter->item)
+	mmiter->iter = cc_list_next(mmiter->iter);
+	if(mmiter->iter)
 	{
-		return iter;
+		return mmiter;
 	}
 
 	return NULL;
 }
 
-cc_multimapIter_t* cc_multimap_nextList(cc_multimapIter_t* iter)
+cc_multimapIter_t* cc_multimap_nextList(cc_multimapIter_t* mmiter)
 {
-	ASSERT(iter);
+	ASSERT(mmiter);
 
-	iter->hiter = cc_map_next(iter->hiter);
-	if(iter->hiter == NULL)
+	mmiter->miter = cc_map_next(mmiter->miter);
+	if(mmiter->miter == NULL)
 	{
 		return NULL;
 	}
 
-	cc_list_t* list = (cc_list_t*) cc_map_val(iter->hiter);
-	iter->item = cc_list_head(list);
+	cc_list_t* list = (cc_list_t*) cc_map_val(mmiter->miter);
+	mmiter->iter = cc_list_head(list);
 
-	return iter;
+	return mmiter;
 }
 
-const void* cc_multimap_key(const cc_multimapIter_t* iter,
+const void* cc_multimap_key(const cc_multimapIter_t* mmiter,
                             int* _len)
 {
-	ASSERT(iter);
+	ASSERT(mmiter);
 	ASSERT(_len);
 
-	return cc_map_key(iter->hiter, _len);
+	return cc_map_key(mmiter->miter, _len);
 }
 
-const void* cc_multimap_val(const cc_multimapIter_t* iter)
+const void* cc_multimap_val(const cc_multimapIter_t* mmiter)
 {
-	ASSERT(iter);
+	ASSERT(mmiter);
 
-	return cc_list_peekIter(iter->item);
+	return cc_list_peekIter(mmiter->iter);
 }
 
 const cc_list_t*
-cc_multimap_list(const cc_multimapIter_t* iter)
+cc_multimap_list(const cc_multimapIter_t* mmiter)
 {
-	ASSERT(iter);
+	ASSERT(mmiter);
 
-	return (const cc_list_t*) cc_map_val(iter->hiter);
+	return (const cc_list_t*) cc_map_val(mmiter->miter);
 }
 
 const cc_list_t*
 cc_multimap_find(const cc_multimap_t* self,
-                 cc_multimapIter_t* iter,
+                 cc_multimapIter_t* mmiter,
                  const char* key)
 {
 	ASSERT(self);
-	ASSERT(iter);
+	ASSERT(mmiter);
 	ASSERT(key);
 
-	iter->hiter = &iter->hiterator;
-
-	cc_list_t* list;
-	list = (cc_list_t*)
-	       cc_map_find(self->map, iter->hiter, key);
-	if(list == NULL)
+	mmiter->miter = cc_map_find(self->map, key);
+	if(mmiter->miter == NULL)
 	{
 		return NULL;
 	}
 
-	iter->item = cc_list_head(list);
+	cc_list_t* list;
+	list = (cc_list_t*) cc_map_val(mmiter->miter);
+
+	mmiter->iter = cc_list_head(list);
 
 	return list;
 }
 
 const cc_list_t*
 cc_multimap_findf(const cc_multimap_t* self,
-                  cc_multimapIter_t* iter,
+                  cc_multimapIter_t* mmiter,
                   const char* fmt, ...)
 {
 	ASSERT(self);
-	ASSERT(iter);
+	ASSERT(mmiter);
 	ASSERT(fmt);
 
 	char key[256];
@@ -241,7 +238,7 @@ cc_multimap_findf(const cc_multimap_t* self,
 	vsnprintf(key, 256, fmt, argptr);
 	va_end(argptr);
 
-	return cc_multimap_find(self, iter, key);
+	return cc_multimap_find(self, mmiter, key);
 }
 
 int cc_multimap_add(cc_multimap_t* self,
@@ -252,18 +249,22 @@ int cc_multimap_add(cc_multimap_t* self,
 	ASSERT(val);
 	ASSERT(key);
 
-	cc_listIter_t* item;
+	cc_listIter_t* iter;
+	cc_mapIter_t*  miter;
+	cc_list_t*     list = NULL;
+
+	miter = cc_map_find(self->map, key);
+	if(miter)
+	{
+		list = (cc_list_t*) cc_map_val(miter);
+	}
 
 	// check if the list already exists
-	cc_mapIter_t iter;
-	cc_list_t* list;
-	list = (cc_list_t*)
-	       cc_map_find(self->map, &iter, key);
 	if(list && self->compare)
 	{
-		item = cc_list_insertSorted(list, self->compare,
+		iter = cc_list_insertSorted(list, self->compare,
 		                            val);
-		if(item == NULL)
+		if(iter == NULL)
 		{
 			return 0;
 		}
@@ -272,8 +273,8 @@ int cc_multimap_add(cc_multimap_t* self,
 	}
 	else if(list)
 	{
-		item = cc_list_append(list, NULL, val);
-		if(item == NULL)
+		iter = cc_list_append(list, NULL, val);
+		if(iter == NULL)
 		{
 			return 0;
 		}
@@ -288,13 +289,13 @@ int cc_multimap_add(cc_multimap_t* self,
 		return 0;
 	}
 
-	item = cc_list_append(list, NULL, val);
-	if(item == NULL)
+	iter = cc_list_append(list, NULL, val);
+	if(iter == NULL)
 	{
 		goto fail_append;
 	}
 
-	if(cc_map_add(self->map, (const void*) list, key) == 0)
+	if(cc_map_add(self->map, (const void*) list, key) == NULL)
 	{
 		goto fail_add;
 	}
@@ -304,7 +305,7 @@ int cc_multimap_add(cc_multimap_t* self,
 
 	// failure
 	fail_add:
-		cc_list_remove(list, &item);
+		cc_list_remove(list, &iter);
 	fail_append:
 		cc_list_delete(&list);
 	return 0;
@@ -334,41 +335,41 @@ cc_multimap_remove(cc_multimap_t* self,
 	ASSERT(_iter);
 	ASSERT(*_iter);
 
-	cc_multimapIter_t* iter = *_iter;
+	cc_multimapIter_t* mmiter = *_iter;
 
-	// remove item from list;
+	// remove iter from list;
 	cc_list_t* list;
 	list = (cc_list_t*)
-	       cc_map_val(iter->hiter);
+	       cc_map_val(mmiter->miter);
 	const void* data = cc_list_remove(list,
-	                                   &iter->item);
+	                                   &mmiter->iter);
 
 	// check if list is empty
-	// or if next item is NULL
+	// or if next iter is NULL
 	if(cc_list_size(list) == 0)
 	{
-		cc_map_remove(self->map, &iter->hiter);
+		cc_map_remove(self->map, &mmiter->miter);
 		cc_list_delete(&list);
-		if(iter->hiter)
+		if(mmiter->miter)
 		{
 			list = (cc_list_t*)
-			       cc_map_val(iter->hiter);
-			iter->item = cc_list_head(list);
+			       cc_map_val(mmiter->miter);
+			mmiter->iter = cc_list_head(list);
 		}
 	}
-	else if(iter->item == NULL)
+	else if(mmiter->iter == NULL)
 	{
-		iter->hiter = cc_map_next(iter->hiter);
-		if(iter->hiter)
+		mmiter->miter = cc_map_next(mmiter->miter);
+		if(mmiter->miter)
 		{
 			list = (cc_list_t*)
-			       cc_map_val(iter->hiter);
-			iter->item = cc_list_head(list);
+			       cc_map_val(mmiter->miter);
+			mmiter->iter = cc_list_head(list);
 		}
 	}
 
 	// check for iteration end
-	if(iter->hiter == NULL)
+	if(mmiter->miter == NULL)
 	{
 		*_iter = NULL;
 	}

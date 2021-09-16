@@ -77,17 +77,18 @@ static void cc_workqNode_delete(cc_workqNode_t** _self)
 
 static void
 cc_workq_removeLocked(cc_workq_t* self, int finish,
-                      cc_list_t* queue, cc_listIter_t** _iter)
+                      cc_list_t* queue,
+                      cc_listIter_t** _iter)
 {
 	ASSERT(self);
 	ASSERT(queue);
 	ASSERT(_iter);
 
 	cc_workqNode_t* node;
-	cc_mapIter_t    miterator;
-	cc_mapIter_t*   miter = &miterator;
-	node = (cc_workqNode_t*) cc_list_remove(queue, _iter);
-	cc_map_findp(self->map_task, miter, 0, node->task);
+	cc_mapIter_t*   miter;
+	node  = (cc_workqNode_t*)
+	        cc_list_remove(queue, _iter);
+	miter = cc_map_findp(self->map_task, 0, node->task);
 	cc_map_remove(self->map_task, &miter);
 
 	if(finish)
@@ -500,14 +501,12 @@ int cc_workq_run(cc_workq_t* self, void* task,
 
 	// find the node containing the task or create a new one
 	cc_listIter_t*  iter;
-	cc_mapIter_t    miterator;
-	cc_mapIter_t*   miter = &miterator;
+	cc_mapIter_t*   miter;
 	cc_workqNode_t* node;
 	cc_listIter_t*  pos;
 	cc_workqNode_t* tmp;
-	iter = (cc_listIter_t*)
-	       cc_map_findp(self->map_task, miter, 0, task);
-	if(iter == NULL)
+	miter = cc_map_findp(self->map_task, 0, task);
+	if(miter == NULL)
 	{
 		// create new node
 		node = cc_workqNode_new(task, self->purge_id,
@@ -553,7 +552,7 @@ int cc_workq_run(cc_workq_t* self, void* task,
 		}
 
 		if(cc_map_addp(self->map_task, (const void*) iter,
-		               0, task) == 0)
+		               0, task) == NULL)
 		{
 			goto fail_map_add;
 		}
@@ -565,6 +564,7 @@ int cc_workq_run(cc_workq_t* self, void* task,
 	}
 	else
 	{
+		iter = (cc_listIter_t*)  cc_map_val(miter);
 		node = (cc_workqNode_t*) cc_list_peekIter(iter);
 	}
 
@@ -671,16 +671,15 @@ int cc_workq_cancel(cc_workq_t* self, void* task,
 	pthread_mutex_lock(&self->mutex);
 
 	// find task in map
-	cc_listIter_t*  iter;
-	cc_mapIter_t    miterator;
-	cc_mapIter_t*   miter = &miterator;
-	iter = (cc_listIter_t*)
-	       cc_map_findp(self->map_task, miter, 0, task);
-	if(iter == NULL)
+	cc_listIter_t* iter;
+	cc_mapIter_t*  miter;
+	miter = cc_map_findp(self->map_task, 0, task);
+	if(miter == NULL)
 	{
 		pthread_mutex_unlock(&self->mutex);
 		return status;
 	}
+	iter = (cc_listIter_t*) cc_map_val(miter);
 
 	cc_workqNode_t* node;
 	node = (cc_workqNode_t*) cc_list_peekIter(iter);
@@ -723,14 +722,13 @@ int cc_workq_status(cc_workq_t* self, void* task)
 	pthread_mutex_lock(&self->mutex);
 
 	// find task in map
-	cc_listIter_t*  iter;
-	cc_mapIter_t    miterator;
-	cc_mapIter_t*   miter = &miterator;
-	iter = (cc_listIter_t*)
-	       cc_map_findp(self->map_task, miter, 0, task);
-	if(iter)
+	cc_listIter_t* iter;
+	cc_mapIter_t*  miter;
+	miter = cc_map_findp(self->map_task, 0, task);
+	if(miter)
 	{
 		cc_workqNode_t* node;
+		iter = (cc_listIter_t*)  cc_map_val(miter);
 		node = (cc_workqNode_t*) cc_list_peekIter(iter);
 		status = node->status;
 	}

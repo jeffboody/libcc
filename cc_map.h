@@ -28,10 +28,7 @@
 
 #include "cc_list.h"
 
-typedef struct
-{
-	cc_listIter_t* iter;
-} cc_mapIter_t;
+typedef cc_listIter_t cc_mapIter_t;
 
 typedef struct
 {
@@ -53,30 +50,26 @@ void          cc_map_delete(cc_map_t** _self);
 void          cc_map_discard(cc_map_t* self);
 int           cc_map_size(const cc_map_t* self);
 size_t        cc_map_sizeof(const cc_map_t* self);
-cc_mapIter_t* cc_map_head(const cc_map_t* self,
-                          cc_mapIter_t* miter);
+cc_mapIter_t* cc_map_head(const cc_map_t* self);
 cc_mapIter_t* cc_map_next(cc_mapIter_t* miter);
 const void*   cc_map_key(const cc_mapIter_t* miter,
                          int* _len);
 const void*   cc_map_val(const cc_mapIter_t* miter);
-const void*   cc_map_findp(const cc_map_t* self,
-                           cc_mapIter_t* miter,
+cc_mapIter_t* cc_map_findp(const cc_map_t* self,
                            int len,
                            const void* key);
-const void*   cc_map_find(const cc_map_t* self,
-                         cc_mapIter_t* miter,
+cc_mapIter_t* cc_map_find(const cc_map_t* self,
                          const char* key);
-const void*   cc_map_findf(const cc_map_t* self,
-                           cc_mapIter_t* miter,
+cc_mapIter_t* cc_map_findf(const cc_map_t* self,
                            const char* fmt, ...);
-int           cc_map_addp(cc_map_t* self,
+cc_mapIter_t* cc_map_addp(cc_map_t* self,
                           const void* val,
                           int len,
                           const void* key);
-int           cc_map_add(cc_map_t* self,
+cc_mapIter_t* cc_map_add(cc_map_t* self,
                          const void* val,
                          const char* key);
-int           cc_map_addf(cc_map_t* self,
+cc_mapIter_t* cc_map_addf(cc_map_t* self,
                           const void* val,
                           const char* fmt, ...);
 const void*   cc_map_remove(cc_map_t* self,

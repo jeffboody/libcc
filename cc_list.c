@@ -326,7 +326,7 @@ const void* cc_list_peekTail(const cc_list_t* self)
 	return (self->size == 0) ? NULL : self->tail->data;
 }
 
-const void* cc_list_peekIter(cc_listIter_t* iter)
+const void* cc_list_peekIter(const cc_listIter_t* iter)
 {
 	ASSERT(iter);
 
