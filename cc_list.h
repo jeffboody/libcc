@@ -49,6 +49,8 @@ size_t         cc_list_sizeof(const cc_list_t* self);
 const void*    cc_list_peekHead(const cc_list_t* self);
 const void*    cc_list_peekTail(const cc_list_t* self);
 const void*    cc_list_peekIter(const cc_listIter_t* iter);
+const void*    cc_list_peekIndex(const cc_list_t* self,
+                                 int idx);
 cc_listIter_t* cc_list_head(const cc_list_t* self);
 cc_listIter_t* cc_list_tail(const cc_list_t* self);
 cc_listIter_t* cc_list_next(cc_listIter_t* iter);

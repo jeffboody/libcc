@@ -333,6 +333,27 @@ const void* cc_list_peekIter(const cc_listIter_t* iter)
 	return iter->data;
 }
 
+const void*
+cc_list_peekIndex(const cc_list_t* self, int idx)
+{
+	ASSERT(self);
+
+	cc_listIter_t* iter;
+	iter = cc_list_head(self);
+	while(iter)
+	{
+		if(idx == 0)
+		{
+			return cc_list_peekIter(iter);
+		}
+		--idx;
+
+		iter = cc_list_next(iter);
+	}
+
+	return NULL;
+}
+
 cc_listIter_t* cc_list_head(const cc_list_t* self)
 {
 	ASSERT(self);
