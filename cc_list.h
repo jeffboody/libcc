@@ -70,8 +70,7 @@ cc_listIter_t* cc_list_insert(cc_list_t* self,
 cc_listIter_t* cc_list_append(cc_list_t* self,
                               cc_listIter_t* iter,
                               const void* data);
-const void*    cc_list_replace(cc_list_t* self,
-                               cc_listIter_t* iter,
+const void*    cc_list_replace(cc_listIter_t* iter,
                                const void* data);
 const void*    cc_list_remove(cc_list_t* self,
                               cc_listIter_t** _iter);
