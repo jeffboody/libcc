@@ -382,6 +382,25 @@ cc_listIter_t* cc_list_prev(cc_listIter_t* iter)
 	return iter->prev;
 }
 
+cc_listIter_t* cc_list_get(cc_list_t* self, int idx)
+{
+	ASSERT(self);
+
+	cc_listIter_t* iter = cc_list_head(self);
+	while(iter)
+	{
+		if(idx == 0)
+		{
+			return iter;
+		}
+
+		iter = cc_list_next(iter);
+		--idx;
+	}
+
+	return NULL;
+}
+
 cc_listIter_t*
 cc_list_find(const cc_list_t* self, const void* data,
              cc_listcmp_fn compare)

@@ -55,6 +55,7 @@ cc_listIter_t* cc_list_head(const cc_list_t* self);
 cc_listIter_t* cc_list_tail(const cc_list_t* self);
 cc_listIter_t* cc_list_next(cc_listIter_t* iter);
 cc_listIter_t* cc_list_prev(cc_listIter_t* iter);
+cc_listIter_t* cc_list_get(cc_list_t* self, int idx);
 cc_listIter_t* cc_list_find(const cc_list_t* self,
                             const void* data,
                             cc_listcmp_fn compare);
