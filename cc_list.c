@@ -543,12 +543,13 @@ void cc_list_move(cc_list_t* self, cc_listIter_t* from,
 		to = cc_list_head(self);
 	}
 
-	if(from == to)
+	cc_listIter_t* prev = to->prev;
+	if((from == to) || (from == prev))
 	{
 		return;
 	}
 
-	cc_listIter_move(from, self, to->prev, to);
+	cc_listIter_move(from, self, prev, to);
 }
 
 void cc_list_moven(cc_list_t* self, cc_listIter_t* from,
@@ -563,12 +564,13 @@ void cc_list_moven(cc_list_t* self, cc_listIter_t* from,
 		to = cc_list_tail(self);
 	}
 
-	if(from == to)
+	cc_listIter_t* next = to->next;
+	if((from == to) || (from == next))
 	{
 		return;
 	}
 
-	cc_listIter_move(from, self, to, to->next);
+	cc_listIter_move(from, self, to, next);
 }
 
 void cc_list_swap(cc_list_t* fromList, cc_list_t* toList,
