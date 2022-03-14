@@ -24,13 +24,17 @@
 #ifndef cc_memory_H
 #define cc_memory_H
 
-void*  cc_malloc_debug(const char* func, int line, size_t size);
-void*  cc_calloc_debug(const char* func, int line, size_t count,
-                       size_t size);
-void*  cc_realloc_debug(const char* func, int line, void* ptr,
-                        size_t size);
-void   cc_free_debug(const char* func, int line, void* ptr);
-void   cc_meminfo_debug(void);
+#ifdef MEMORY_DEBUG
+void* cc_malloc_debug(const char* func, int line,
+                      size_t size);
+void* cc_calloc_debug(const char* func, int line,
+                      size_t count, size_t size);
+void* cc_realloc_debug(const char* func, int line,
+                       void* ptr, size_t size);
+void  cc_free_debug(const char* func, int line, void* ptr);
+void  cc_meminfo_debug(void);
+#endif
+
 void*  cc_malloc(size_t size);
 void*  cc_calloc(size_t count, size_t size);
 void*  cc_realloc(void* ptr, size_t size);

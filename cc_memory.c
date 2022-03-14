@@ -22,14 +22,30 @@
  */
 
 #include <pthread.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #define LOG_TAG "cc"
 #include "cc_log.h"
-#include "cc_map.h"
 #include "cc_memory.h"
+
+// The sizeof(cc_memory_t) needs to match the alignment
+// requirements of the platform. However there doesn't seem
+// to be a good platform independent technique to determine
+// this information.
+typedef struct
+{
+	size_t size;
+} cc_memory_t;
+
+pthread_mutex_t memory_mutex = PTHREAD_MUTEX_INITIALIZER;
+size_t          memory_count = 0;
+size_t          memory_size  = 0;
+
+#ifdef MEMORY_DEBUG
+
+#include <stdio.h>
+#include <string.h>
+#include "cc_map.h"
 
 /***********************************************************
 * protected                                                *
@@ -42,15 +58,6 @@ extern cc_map_t* cc_map_newCMalloc(void);
 ***********************************************************/
 
 #define CC_MEMORY_NAMELEN 64
-
-// The sizeof(cc_memory_t) needs to match the alignment
-// requirements of the platform. However there doesn't seem
-// to be a good platform independent technique to determine
-// this information.
-typedef struct
-{
-	size_t size;
-} cc_memory_t;
 
 typedef struct
 {
@@ -72,10 +79,7 @@ typedef struct
 	cc_map_t* map_pinfo;
 } cc_meminfo_t;
 
-pthread_mutex_t memory_mutex   = PTHREAD_MUTEX_INITIALIZER; 
-cc_meminfo_t*   memory_meminfo = NULL;
-size_t          memory_count   = 0;
-size_t          memory_size    = 0;
+cc_meminfo_t* memory_meminfo = NULL;
 
 /***********************************************************
 * private - cc_ator                                        *
@@ -298,7 +302,6 @@ cc_meminfo_add(cc_meminfo_t* self,
 
 	// success
 	++memory_count;
-	memory_size += size;
 	return;
 
 	// failure
@@ -329,7 +332,6 @@ cc_meminfo_rem(cc_meminfo_t* self, const char* func,
 	cc_ator_rem(pinfo->ator_ref, pinfo);
 	cc_map_remove(self->map_pinfo, &miter);
 	--memory_count;
-	memory_size -= pinfo->size;
 	cc_pinfo_delete(&pinfo);
 }
 
@@ -337,10 +339,9 @@ static void cc_meminfo_meminfo(cc_meminfo_t* self)
 {
 	ASSERT(self);
 
-	LOGI("cnt_ator=%i, cnt_pinfo=%i, size=%i",
+	LOGI("cnt_ator=%i, cnt_pinfo=%i",
 	     cc_map_size(self->map_ator),
-	     cc_map_size(self->map_pinfo),
-	     (int) memory_size);
+	     cc_map_size(self->map_pinfo));
 
 	cc_mapIter_t* miter = cc_map_head(self->map_ator);
 	while(miter)
@@ -424,13 +425,13 @@ static void cc_memory_meminfo(void)
 }
 
 /***********************************************************
-* public                                                   *
+* public - debug                                           *
 ***********************************************************/
 
 void* cc_malloc_debug(const char* func, int line,
                       size_t size)
 {
-	void* ptr = malloc(size);
+	void* ptr = cc_malloc(size);
 	cc_memory_add(func, line, ptr, size);
 	return ptr;
 }
@@ -438,7 +439,7 @@ void* cc_malloc_debug(const char* func, int line,
 void* cc_calloc_debug(const char* func, int line,
                       size_t count, size_t size)
 {
-	void* ptr = calloc(count, size);
+	void* ptr = cc_calloc(count, size);
 	cc_memory_add(func, line, ptr, count*size);
 	return ptr;
 }
@@ -446,7 +447,7 @@ void* cc_calloc_debug(const char* func, int line,
 void* cc_realloc_debug(const char* func, int line,
                        void* ptr, size_t size)
 {
-	void* reptr = realloc(ptr, size);
+	void* reptr = cc_realloc(ptr, size);
 	cc_memory_rem(func, line, ptr);
 	cc_memory_add(func, line, reptr, size);
 	return reptr;
@@ -455,13 +456,20 @@ void* cc_realloc_debug(const char* func, int line,
 void cc_free_debug(const char* func, int line, void* ptr)
 {
 	cc_memory_rem(func, line, ptr);
-	free(ptr);
+	cc_free(ptr);
 }
 
 void cc_meminfo_debug(void)
 {
+	cc_meminfo();
 	cc_memory_meminfo();
 }
+
+#endif // MEMORY_DEBUG
+
+/***********************************************************
+* public                                                   *
+***********************************************************/
 
 void* cc_malloc(size_t size)
 {
