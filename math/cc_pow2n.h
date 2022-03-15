@@ -24,6 +24,10 @@
 #ifndef cc_pow2n_H
 #define cc_pow2n_H
 
-int cc_pow2n(int n);
+#include <stdint.h>
+
+uint32_t cc_pow2n(uint32_t n);
+uint32_t cc_next_pow2n(uint32_t v);
+uint64_t cc_next_pow2n64(uint64_t v);
 
 #endif

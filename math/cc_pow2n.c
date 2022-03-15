@@ -31,11 +31,11 @@
 * public                                                   *
 ***********************************************************/
 
-int cc_pow2n(int n)
+uint32_t cc_pow2n(uint32_t n)
 {
 	ASSERT((n >= 0) && (n <= 30));
 
-	int pow2n[] =
+	uint32_t pow2n[] =
 	{
 		1,          //  0
 		2,          //  1
@@ -68,7 +68,39 @@ int cc_pow2n(int n)
 		268435456,  // 28
 		536870912,  // 29
 		1073741824, // 30
+		2147483648, // 31
 	};
 
 	return pow2n[n];
+}
+
+uint32_t cc_next_pow2n(uint32_t v)
+{
+	// Devised by Sean Anderson, Sepember 14, 2001. Pete Hart
+	// pointed me to a couple newsgroup posts by him and
+	// William Lewis in February of 1997, where they arrive at
+	// the same algorithm.
+	// https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+
+	v--;
+	v |= v >> 1;
+	v |= v >> 2;
+	v |= v >> 4;
+	v |= v >> 8;
+	v |= v >> 16;
+	v++;
+	return v;
+}
+
+uint64_t cc_next_pow2n64(uint64_t v)
+{
+	v--;
+	v |= v >> 1;
+	v |= v >> 2;
+	v |= v >> 4;
+	v |= v >> 8;
+	v |= v >> 16;
+	v |= v >> 32;
+	v++;
+	return v;
 }
