@@ -53,12 +53,20 @@ const void*        cc_multimap_key(const cc_multimapIter_t* mmiter,
                                    int* _len);
 const void*        cc_multimap_val(const cc_multimapIter_t* mmiter);
 const cc_list_t*   cc_multimap_list(const cc_multimapIter_t* mmiter);
+const cc_list_t*   cc_multimap_findp(const cc_multimap_t* self,
+                                     cc_multimapIter_t* mmiter,
+                                     int len,
+                                     const void* key);
 const cc_list_t*   cc_multimap_find(const cc_multimap_t* self,
                                     cc_multimapIter_t* mmiter,
                                     const char* key);
 const cc_list_t*   cc_multimap_findf(const cc_multimap_t* self,
                                      cc_multimapIter_t* mmiter,
                                      const char* fmt, ...);
+int                cc_multimap_addp(cc_multimap_t* self,
+                                    const void* val,
+                                    int len,
+                                    const void* key);
 int                cc_multimap_add(cc_multimap_t* self,
                                    const void* val,
                                    const char* key);

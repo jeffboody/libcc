@@ -201,6 +201,30 @@ cc_multimap_list(const cc_multimapIter_t* mmiter)
 }
 
 const cc_list_t*
+cc_multimap_findp(const cc_multimap_t* self,
+                  cc_multimapIter_t* mmiter,
+                  int len,
+                  const void* key)
+{
+	ASSERT(self);
+	ASSERT(mmiter);
+	ASSERT(key);
+
+	mmiter->miter = cc_map_findp(self->map, len, key);
+	if(mmiter->miter == NULL)
+	{
+		return NULL;
+	}
+
+	cc_list_t* list;
+	list = (cc_list_t*) cc_map_val(mmiter->miter);
+
+	mmiter->iter = cc_list_head(list);
+
+	return list;
+}
+
+const cc_list_t*
 cc_multimap_find(const cc_multimap_t* self,
                  cc_multimapIter_t* mmiter,
                  const char* key)
@@ -239,6 +263,78 @@ cc_multimap_findf(const cc_multimap_t* self,
 	va_end(argptr);
 
 	return cc_multimap_find(self, mmiter, key);
+}
+
+int cc_multimap_addp(cc_multimap_t* self,
+                     const void* val,
+                     int len,
+                     const void* key)
+{
+	ASSERT(self);
+	ASSERT(val);
+	ASSERT(key);
+
+	cc_listIter_t* iter;
+	cc_mapIter_t*  miter;
+	cc_list_t*     list = NULL;
+
+	miter = cc_map_findp(self->map, len, key);
+	if(miter)
+	{
+		list = (cc_list_t*) cc_map_val(miter);
+	}
+
+	// check if the list already exists
+	if(list && self->compare)
+	{
+		iter = cc_list_insertSorted(list, self->compare,
+		                            val);
+		if(iter == NULL)
+		{
+			return 0;
+		}
+
+		return 1;
+	}
+	else if(list)
+	{
+		iter = cc_list_append(list, NULL, val);
+		if(iter == NULL)
+		{
+			return 0;
+		}
+
+		return 1;
+	}
+
+	// create a new list and add to map
+	list = cc_list_new();
+	if(list == NULL)
+	{
+		return 0;
+	}
+
+	iter = cc_list_append(list, NULL, val);
+	if(iter == NULL)
+	{
+		goto fail_append;
+	}
+
+	if(cc_map_addp(self->map, (const void*) list, len,
+	               key) == NULL)
+	{
+		goto fail_add;
+	}
+
+	// success
+	return 1;
+
+	// failure
+	fail_add:
+		cc_list_remove(list, &iter);
+	fail_append:
+		cc_list_delete(&list);
+	return 0;
 }
 
 int cc_multimap_add(cc_multimap_t* self,
