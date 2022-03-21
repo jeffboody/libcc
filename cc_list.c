@@ -105,20 +105,35 @@ cc_listIter_t* cc_listPool_get(void)
 	return iter;
 }
 
-void cc_listPool_put(cc_listIter_t* iter)
+void cc_listPool_put(cc_listIter_t* iters)
 {
-	ASSERT(iter);
+	// iters may be NULL
 
 	cc_listPool_t* pool = &g_list_pool;
 
+	if(iters == NULL)
+	{
+		// ignore
+		return;
+	}
+
+	// count nodes and find tail node
+	size_t         count = 1;
+	cc_listIter_t* tail  = iters;
+	while(tail->next)
+	{
+		++count;
+		tail = tail->next;
+	}
+
 	pthread_mutex_lock(&pool->mutex);
 
-	// insert iter into free iters
-	iter->next  = pool->iters;
-	pool->iters = iter;
+	// insert iters into free iters
+	tail->next  = pool->iters;
+	pool->iters = iters;
 
 	// free all blocks when not needed
-	--pool->refcount;
+	pool->refcount -= count;
 	if(pool->refcount == 0)
 	{
 		pool->iters = NULL;
@@ -273,6 +288,11 @@ cc_listIter_new(cc_list_t* list, cc_listIter_t* prev,
 		self = (cc_listIter_t*)
 		       calloc(1, sizeof(cc_listIter_t));
 	}
+	else if(list->iters)
+	{
+		self        = list->iters;
+		list->iters = list->iters->next;
+	}
 	else
 	{
 		self = cc_listPool_get();
@@ -314,7 +334,8 @@ cc_listIter_delete(cc_listIter_t** _self, cc_list_t* list)
 		}
 		else
 		{
-			cc_listPool_put(self);
+			self->next = list->iters;
+			list->iters = self;
 		}
 
 
@@ -380,6 +401,8 @@ void cc_list_delete(cc_list_t** _self)
 			LOGE("memory leak detected: size=%i", self->size);
 			cc_list_discard(self);
 		}
+
+		cc_listPool_put(self->iters);
 
 		if(self->flags & CC_LIST_FLAG_CMALLOC)
 		{

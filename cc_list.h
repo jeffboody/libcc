@@ -39,6 +39,7 @@ typedef struct
 	int            size;
 	cc_listIter_t* head;
 	cc_listIter_t* tail;
+	cc_listIter_t* iters;
 } cc_list_t;
 
 cc_list_t*     cc_list_new(void);
