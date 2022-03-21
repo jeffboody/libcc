@@ -36,6 +36,7 @@
 ***********************************************************/
 
 #define CC_LISTBLOCK_SIZE 1024
+#define CC_LISTSET_SIZE   32
 
 typedef struct cc_listBlock_s cc_listBlock_t;
 
@@ -82,7 +83,7 @@ cc_listIter_t* cc_listPool_get(void)
 		block->next  = pool->blocks;
 		pool->blocks = block;
 
-		// insert iter to iters
+		// insert iter to list of free iters
 		int i;
 		for(i = 0; i < CC_LISTBLOCK_SIZE; ++i)
 		{
@@ -93,16 +94,22 @@ cc_listIter_t* cc_listPool_get(void)
 		}
 	}
 
-	// get a free iter
-	cc_listIter_t* iter;
-	iter        = pool->iters;
-	pool->iters = pool->iters->next;
+	// get a set of free iters
+	int i;
+	cc_listIter_t* iters = pool->iters;
+	cc_listIter_t* tail;
+	for(i = 0; i < CC_LISTSET_SIZE; ++i)
+	{
+		tail        = pool->iters;
+		pool->iters = pool->iters->next;
+	}
+	tail->next = NULL;
 
-	++pool->refcount;
+	pool->refcount += CC_LISTSET_SIZE;
 
 	pthread_mutex_unlock(&pool->mutex);
 
-	return iter;
+	return iters;
 }
 
 void cc_listPool_put(cc_listIter_t* iters)
@@ -117,7 +124,7 @@ void cc_listPool_put(cc_listIter_t* iters)
 		return;
 	}
 
-	// count nodes and find tail node
+	// count iters and find tail iter
 	size_t         count = 1;
 	cc_listIter_t* tail  = iters;
 	while(tail->next)
@@ -290,12 +297,29 @@ cc_listIter_new(cc_list_t* list, cc_listIter_t* prev,
 	}
 	else if(list->iters)
 	{
+		// use a local free iter
 		self        = list->iters;
 		list->iters = list->iters->next;
 	}
 	else
 	{
+		// get a set of free iters
 		self = cc_listPool_get();
+
+		// keep first iter from set and
+		// add remaining to list of free iters
+		if(self)
+		{
+			cc_listIter_t* iter = self->next;
+			cc_listIter_t* next;
+			while(iter)
+			{
+				next        = iter->next;
+				iter->next  = list->iters;
+				list->iters = iter;
+				iter        = next;
+			}
+		}
 	}
 
 	if(self == NULL)
@@ -334,6 +358,7 @@ cc_listIter_delete(cc_listIter_t** _self, cc_list_t* list)
 		}
 		else
 		{
+			// add iter to list of free iters
 			self->next = list->iters;
 			list->iters = self;
 		}
@@ -402,6 +427,7 @@ void cc_list_delete(cc_list_t** _self)
 			cc_list_discard(self);
 		}
 
+		// put the list of free iters
 		cc_listPool_put(self->iters);
 
 		if(self->flags & CC_LIST_FLAG_CMALLOC)
