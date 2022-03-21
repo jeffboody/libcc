@@ -21,6 +21,7 @@
  *
  */
 
+#include <pthread.h>
 #include <stdlib.h>
 
 #define LOG_TAG "cc"
@@ -29,6 +30,110 @@
 #include "cc_memory.h"
 
 #define CC_LIST_FLAG_CMALLOC 1
+
+/***********************************************************
+* private - global listIter pool                           *
+***********************************************************/
+
+#define CC_LISTBLOCK_SIZE 1024
+
+typedef struct cc_listBlock_s cc_listBlock_t;
+
+typedef struct cc_listBlock_s
+{
+	cc_listIter_t   array[CC_LISTBLOCK_SIZE];
+	cc_listBlock_t* next;
+} cc_listBlock_t;
+
+typedef struct
+{
+	size_t          refcount;
+	cc_listIter_t*  iters; // sll of free iter references
+	cc_listBlock_t* blocks;
+	pthread_mutex_t mutex;
+} cc_listPool_t;
+
+static cc_listPool_t g_list_pool =
+{
+	.mutex=PTHREAD_MUTEX_INITIALIZER,
+};
+
+cc_listIter_t* cc_listPool_get(void)
+{
+	cc_listPool_t* pool = &g_list_pool;
+
+	pthread_mutex_lock(&pool->mutex);
+
+	// check if free iters exist
+	if(pool->iters == NULL)
+	{
+		// create a new block
+		cc_listBlock_t* block;
+		block = (cc_listBlock_t*)
+		        CALLOC(1, sizeof(cc_listBlock_t));
+		if(block == NULL)
+		{
+			// silently fail
+			pthread_mutex_unlock(&pool->mutex);
+			return NULL;
+		}
+
+		// insert block to list
+		block->next  = pool->blocks;
+		pool->blocks = block;
+
+		// insert iter to iters
+		int i;
+		for(i = 0; i < CC_LISTBLOCK_SIZE; ++i)
+		{
+			cc_listIter_t* iter;
+			iter        = &block->array[i];
+			iter->next  = pool->iters;
+			pool->iters = iter;
+		}
+	}
+
+	// get a free iter
+	cc_listIter_t* iter;
+	iter        = pool->iters;
+	pool->iters = pool->iters->next;
+
+	++pool->refcount;
+
+	pthread_mutex_unlock(&pool->mutex);
+
+	return iter;
+}
+
+void cc_listPool_put(cc_listIter_t* iter)
+{
+	ASSERT(iter);
+
+	cc_listPool_t* pool = &g_list_pool;
+
+	pthread_mutex_lock(&pool->mutex);
+
+	// insert iter into free iters
+	iter->next  = pool->iters;
+	pool->iters = iter;
+
+	// free all blocks when not needed
+	--pool->refcount;
+	if(pool->refcount == 0)
+	{
+		pool->iters = NULL;
+
+		cc_listBlock_t* block = pool->blocks;
+		while(block)
+		{
+			pool->blocks = pool->blocks->next;
+			FREE(block);
+			block = pool->blocks;
+		}
+	}
+
+	pthread_mutex_unlock(&pool->mutex);
+}
 
 /***********************************************************
 * private                                                  *
@@ -170,8 +275,7 @@ cc_listIter_new(cc_list_t* list, cc_listIter_t* prev,
 	}
 	else
 	{
-		self = (cc_listIter_t*)
-		       CALLOC(1, sizeof(cc_listIter_t));
+		self = cc_listPool_get();
 	}
 
 	if(self == NULL)
@@ -180,8 +284,10 @@ cc_listIter_new(cc_list_t* list, cc_listIter_t* prev,
 		return NULL;
 	}
 
-	self->data = data;
+	// add iter to list
 	cc_listIter_add(self, list, prev, next);
+	self->data = data;
+
 	return self;
 }
 
@@ -196,8 +302,10 @@ cc_listIter_delete(cc_listIter_t** _self, cc_list_t* list)
 	const void*    data = NULL;
 	if(self)
 	{
-		next = self->next;
-		data = self->data;
+		// remove iter from list
+		next       = self->next;
+		data       = self->data;
+		self->data = NULL;
 		cc_listIter_remove(self, list);
 
 		if(list->flags & CC_LIST_FLAG_CMALLOC)
@@ -206,8 +314,9 @@ cc_listIter_delete(cc_listIter_t** _self, cc_list_t* list)
 		}
 		else
 		{
-			FREE(self);
+			cc_listPool_put(self);
 		}
+
 
 		*_self = next;
 	}
