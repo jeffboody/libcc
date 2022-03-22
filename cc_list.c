@@ -59,7 +59,7 @@ static cc_listPool_t g_list_pool =
 	.mutex=PTHREAD_MUTEX_INITIALIZER,
 };
 
-cc_listIter_t* cc_listPool_get(void)
+static cc_listIter_t* cc_listPool_get(void)
 {
 	cc_listPool_t* pool = &g_list_pool;
 
@@ -112,7 +112,7 @@ cc_listIter_t* cc_listPool_get(void)
 	return iters;
 }
 
-void cc_listPool_put(cc_listIter_t* iters)
+static void cc_listPool_put(cc_listIter_t* iters)
 {
 	// iters may be NULL
 
@@ -427,15 +427,15 @@ void cc_list_delete(cc_list_t** _self)
 			cc_list_discard(self);
 		}
 
-		// put the list of free iters
-		cc_listPool_put(self->iters);
-
 		if(self->flags & CC_LIST_FLAG_CMALLOC)
 		{
 			free(self);
 		}
 		else
 		{
+			// put the list of free iters
+			cc_listPool_put(self->iters);
+
 			FREE(self);
 		}
 
