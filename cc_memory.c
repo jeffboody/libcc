@@ -301,7 +301,6 @@ cc_meminfo_add(cc_meminfo_t* self,
 	}
 
 	// success
-	++memory_count;
 	return;
 
 	// failure
@@ -331,7 +330,6 @@ cc_meminfo_rem(cc_meminfo_t* self, const char* func,
 
 	cc_ator_rem(pinfo->ator_ref, pinfo);
 	cc_map_remove(self->map_pinfo, &miter);
-	--memory_count;
 	cc_pinfo_delete(&pinfo);
 }
 
@@ -447,9 +445,16 @@ void* cc_calloc_debug(const char* func, int line,
 void* cc_realloc_debug(const char* func, int line,
                        void* ptr, size_t size)
 {
-	void* reptr = cc_realloc(ptr, size);
 	cc_memory_rem(func, line, ptr);
-	cc_memory_add(func, line, reptr, size);
+	void* reptr = cc_realloc(ptr, size);
+	if(reptr)
+	{
+		cc_memory_add(func, line, reptr, size);
+	}
+	else
+	{
+		cc_memory_add(func, line, ptr, size);
+	}
 	return reptr;
 }
 
