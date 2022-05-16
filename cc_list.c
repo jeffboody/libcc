@@ -49,6 +49,7 @@ typedef struct cc_listBlock_s
 typedef struct
 {
 	size_t          refcount;
+	size_t          count;
 	cc_listIter_t*  iters; // sll of free iter references
 	cc_listBlock_t* blocks;
 	pthread_mutex_t mutex;
@@ -66,7 +67,7 @@ static cc_listIter_t* cc_listPool_get(void)
 	pthread_mutex_lock(&pool->mutex);
 
 	// check if free iters exist
-	if(pool->iters == NULL)
+	if(pool->count < CC_LISTSET_SIZE)
 	{
 		// create a new block
 		cc_listBlock_t* block;
@@ -92,6 +93,8 @@ static cc_listIter_t* cc_listPool_get(void)
 			iter->next  = pool->iters;
 			pool->iters = iter;
 		}
+
+		pool->count += CC_LISTBLOCK_SIZE;
 	}
 
 	// get a set of free iters
@@ -105,6 +108,7 @@ static cc_listIter_t* cc_listPool_get(void)
 	}
 	tail->next = NULL;
 
+	pool->count    -= CC_LISTSET_SIZE;
 	pool->refcount += CC_LISTSET_SIZE;
 
 	pthread_mutex_unlock(&pool->mutex);
@@ -136,8 +140,9 @@ static void cc_listPool_put(cc_listIter_t* iters)
 	pthread_mutex_lock(&pool->mutex);
 
 	// insert iters into free iters
-	tail->next  = pool->iters;
-	pool->iters = iters;
+	tail->next   = pool->iters;
+	pool->iters  = iters;
+	pool->count += count;
 
 	// free all blocks when not needed
 	pool->refcount -= count;
