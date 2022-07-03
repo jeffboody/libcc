@@ -9,6 +9,7 @@ if(CC_USE_MATH)
         math/cc_orientation.c
         math/cc_quaternion.c
         math/cc_plane.c
+        math/cc_float.c
         math/cc_fplane.c
         math/cc_ray.c
         math/cc_sphere.c
@@ -34,7 +35,6 @@ add_library(cc
             cc_multimap.c
             cc_mumurhash3.c
             cc_timestamp.c
-            cc_unit.c
             cc_workq.c
             ${SOURCE_MATH})
 

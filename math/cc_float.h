@@ -21,9 +21,19 @@
  *
  */
 
-#ifndef cc_unit_H
-#define cc_unit_H
+#ifndef cc_float_H
+#define cc_float_H
 
+// operators
+float cc_ceil(float x);
+float cc_clamp(float x, float min, float max);
+float cc_floor(float x);
+float cc_max(float a, float b);
+float cc_min(float a, float b);
+float cc_mix(float a, float b, float s);
+float cc_round(float x);
+
+// unit conversion
 float cc_ft2mi(float x);
 float cc_mi2ft(float x);
 float cc_ft2m(float x);

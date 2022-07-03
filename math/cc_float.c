@@ -24,12 +24,77 @@
 #include <math.h>
 #include <stdlib.h>
 
-#define LOG_TAG "cc"
-#include "cc_log.h"
-#include "cc_unit.h"
+#include "cc_float.h"
 
 /***********************************************************
-* public                                                   *
+* public - operators                                       *
+***********************************************************/
+
+float cc_ceil(float x)
+{
+	int xi = (int) x;
+	return (float) (xi + 1);
+}
+
+float cc_clamp(float x, float min, float max)
+{
+	if(x <= min)
+	{
+		return min;
+	}
+	else if(x >= max)
+	{
+		return max;
+	}
+	else
+	{
+		return x;
+	}
+}
+
+float cc_floor(float x)
+{
+	int xi = (int) x;
+	return (float) xi;
+}
+
+float cc_max(float a, float b)
+{
+	if(a >= b)
+	{
+		return a;
+	}
+	else
+	{
+		return b;
+	}
+}
+
+float cc_min(float a, float b)
+{
+	if(a <= b)
+	{
+		return a;
+	}
+	else
+	{
+		return b;
+	}
+}
+
+float cc_mix(float a, float b, float s)
+{
+	return a + s*(b - a);
+}
+
+float cc_round(float x)
+{
+	int xi = (int) (x + 0.5f);
+	return (float) xi;
+}
+
+/***********************************************************
+* public - unit conversion                                 *
 ***********************************************************/
 
 float cc_ft2mi(float x)

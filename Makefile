@@ -8,7 +8,6 @@ CLASSES = \
 	cc_multimap   \
 	cc_mumurhash3 \
 	cc_timestamp  \
-	cc_unit       \
 	cc_workq
 ifeq ($(CC_USE_MATH),1)
 	CLASSES += \
@@ -16,6 +15,7 @@ ifeq ($(CC_USE_MATH),1)
 		math/cc_orientation \
 		math/cc_quaternion  \
 		math/cc_plane       \
+		math/cc_float       \
 		math/cc_fplane      \
 		math/cc_ray         \
 		math/cc_sphere      \
