@@ -23,6 +23,7 @@
 
 #include <pthread.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define LOG_TAG "cc"
 #include "cc_list.h"
@@ -32,7 +33,7 @@
 #define CC_LIST_FLAG_CMALLOC 1
 
 /***********************************************************
-* private - global listIter pool                           *
+* protected - global listIter pool                         *
 ***********************************************************/
 
 #define CC_LISTBLOCK_SIZE 1024
@@ -55,10 +56,38 @@ typedef struct
 	pthread_mutex_t mutex;
 } cc_listPool_t;
 
+// Android does not allow the use of
+// PTHREAD_MUTEX_INITIALIZER due to the Android app life
+// cycle as the mutex is not reinitialized after
+// onDestroy().
+// See vkk_platformAndroid.c where this case is
+// automatically handled.
+#ifdef ANDROID
+static cc_listPool_t g_list_pool;
+
+void cc_listPool_init(void)
+{
+	memset(&g_list_pool, 0, sizeof(cc_listPool_t));
+	if(pthread_mutex_init(&g_list_pool.mutex, NULL) != 0)
+	{
+		LOGE("pthread_mutex_init failed");
+	}
+}
+
+void cc_listPool_destroy(void)
+{
+	pthread_mutex_destroy(&g_list_pool.mutex);
+}
+#else
 static cc_listPool_t g_list_pool =
 {
 	.mutex=PTHREAD_MUTEX_INITIALIZER,
 };
+#endif
+
+/***********************************************************
+* private - global listIter pool                           *
+***********************************************************/
 
 static cc_listIter_t* cc_listPool_get(void)
 {
