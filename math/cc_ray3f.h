@@ -21,8 +21,8 @@
  *
  */
 
-#ifndef cc_ray_H
-#define cc_ray_H
+#ifndef cc_ray3f_H
+#define cc_ray3f_H
 
 #include "cc_sphere.h"
 #include "cc_vec3f.h"
@@ -31,14 +31,14 @@ typedef struct
 {
 	cc_vec3f_t p;
 	cc_vec3f_t v;
-} cc_ray_t;
+} cc_ray3f_t;
 
-void cc_ray_load(cc_ray_t* self,
-                 float px, float py, float pz,
-                 float vx, float vy, float vz);
-int  cc_ray_hitsphere(const cc_ray_t* self,
-                      const cc_sphere_t* s);
-void cc_ray_getpoint(const cc_ray_t* self, float s,
-                     cc_vec3f_t* p);
+void cc_ray3f_load(cc_ray3f_t* self,
+                   float px, float py, float pz,
+                   float vx, float vy, float vz);
+int  cc_ray3f_hitsphere(const cc_ray3f_t* self,
+                        const cc_sphere_t* s);
+void cc_ray3f_getpoint(const cc_ray3f_t* self, float s,
+                       cc_vec3f_t* p);
 
 #endif

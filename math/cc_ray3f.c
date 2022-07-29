@@ -25,15 +25,15 @@
 
 #define LOG_TAG "cc"
 #include "../cc_log.h"
-#include "cc_ray.h"
+#include "cc_ray3f.h"
 
 /***********************************************************
 * public                                                   *
 ***********************************************************/
 
-void cc_ray_load(cc_ray_t* self,
-                 float px, float py, float pz,
-                 float vx, float vy, float vz)
+void cc_ray3f_load(cc_ray3f_t* self,
+                   float px, float py, float pz,
+                   float vx, float vy, float vz)
 {
 	ASSERT(self);
 
@@ -42,8 +42,8 @@ void cc_ray_load(cc_ray_t* self,
 	cc_vec3f_normalize(&self->v);
 }
 
-int cc_ray_hitsphere(const cc_ray_t* self,
-                     const cc_sphere_t* s)
+int cc_ray3f_hitsphere(const cc_ray3f_t* self,
+                       const cc_sphere_t* s)
 {
 	ASSERT(self);
 	ASSERT(s);
@@ -74,8 +74,9 @@ int cc_ray_hitsphere(const cc_ray_t* self,
 	return (d < s->r) ? 1 : 0;
 }
 
-void cc_ray_getpoint(const cc_ray_t* self, float s,
-                     cc_vec3f_t* p)
+void
+cc_ray3f_getpoint(const cc_ray3f_t* self, float s,
+                  cc_vec3f_t* p)
 {
 	ASSERT(self);
 	ASSERT(p);
