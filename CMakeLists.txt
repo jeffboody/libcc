@@ -11,6 +11,7 @@ if(CC_USE_MATH)
         math/cc_plane.c
         math/cc_float.c
         math/cc_fplane.c
+        math/cc_ray3d.c
         math/cc_ray3f.c
         math/cc_sphere.c
         math/cc_stack4f.c
