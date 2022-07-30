@@ -18,6 +18,7 @@ if(CC_USE_MATH)
         math/cc_mat3f.c
         math/cc_mat4f.c
         math/cc_vec2f.c
+        math/cc_vec3d.c
         math/cc_vec3f.c
         math/cc_vec4f.c)
 endif()

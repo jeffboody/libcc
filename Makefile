@@ -24,6 +24,7 @@ ifeq ($(CC_USE_MATH),1)
 		math/cc_mat3f       \
 		math/cc_mat4f       \
 		math/cc_vec2f       \
+		math/cc_vec3d       \
 		math/cc_vec3f       \
 		math/cc_vec4f
 endif
