@@ -5,19 +5,20 @@ add_compile_options(-Wall)
 
 if(CC_USE_MATH)
     set(SOURCE_MATH
-        math/cc_pow2n.c
-        math/cc_orientation.c
-        math/cc_quaternion.c
-        math/cc_plane.c
+        math/cc_doubleSingle.c
         math/cc_float.c
         math/cc_fplane.c
-        math/cc_ray3d.c
-        math/cc_ray3f.c
-        math/cc_sphere.c
-        math/cc_stack4f.c
-        math/cc_rect12f.c
         math/cc_mat3f.c
         math/cc_mat4f.c
+        math/cc_orientation.c
+        math/cc_plane.c
+        math/cc_pow2n.c
+        math/cc_quaternion.c
+        math/cc_ray3d.c
+        math/cc_ray3f.c
+        math/cc_rect12f.c
+        math/cc_sphere.c
+        math/cc_stack4f.c
         math/cc_vec2f.c
         math/cc_vec3d.c
         math/cc_vec3f.c
