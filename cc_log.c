@@ -126,3 +126,34 @@ void cc_trace_end(void)
 		}
 	#endif
 }
+
+void cc_assert(const char* func, int line,
+               const char* tag, const char* expr)
+{
+	ASSERT(func);
+	ASSERT(tag);
+	ASSERT(expr);
+
+	char buf[256];
+	#ifdef ANDROID
+		snprintf(buf, 256, "%s@%i ASSERT(%s)", func, line, expr);
+	#else
+		#ifdef __EMSCRIPTEN__
+			int tid = 0;
+		#else
+			int tid = (int) syscall(SYS_gettid);
+		#endif
+		snprintf(buf, 256, "E/%i/%s: %s@%i ASSERT(%s)",
+		         tid, tag, func, line, expr);
+	#endif
+
+	#ifdef ANDROID
+		__android_log_print(ANDROID_LOG_ERROR, tag, "%s", buf);
+	#else
+		printf("%s\n", buf);
+		fflush(stdout);
+	#endif
+
+	// trigger the assert
+	assert(0);
+}

@@ -55,6 +55,8 @@
 // logging using Android "standard" macros
 void cc_log(const char* func, int line, int type,
             const char* tag, const char* fmt, ...);
+void cc_assert(const char* func, int line,
+               const char* tag, const char* expr);
 
 // tracing using Android Systrace
 void cc_trace_init(void);
@@ -81,6 +83,14 @@ void cc_trace_end(void);
 	#define LOGE(...) (cc_log(__func__, __LINE__, ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__))
 #endif
 
+#ifndef ASSERT
+	#ifdef ASSERT_DEBUG
+		#define ASSERT(expr) do { if(!(expr)) { cc_assert(__func__, __LINE__, LOG_TAG, #expr); } } while(0)
+	#else
+		#define ASSERT(expr)
+	#endif
+#endif
+
 #ifndef TRACE_INIT
 	#ifdef TRACE_DEBUG
 		#define TRACE_INIT() (cc_trace_init())
@@ -102,14 +112,6 @@ void cc_trace_end(void);
 		#define TRACE_END() (cc_trace_end())
 	#else
 		#define TRACE_END()
-	#endif
-#endif
-
-#ifndef ASSERT
-	#ifdef ASSERT_DEBUG
-		#define ASSERT(...) (assert(__VA_ARGS__))
-	#else
-		#define ASSERT(...)
 	#endif
 #endif
 
