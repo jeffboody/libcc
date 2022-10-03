@@ -333,6 +333,25 @@ cc_meminfo_rem(cc_meminfo_t* self, const char* func,
 	cc_pinfo_delete(&pinfo);
 }
 
+static int
+cc_meminfo_memcheckptr(cc_meminfo_t* self, const char* func,
+                       int line, void* ptr)
+{
+	ASSERT(self);
+	ASSERT(func);
+	ASSERT(ptr);
+
+	cc_mapIter_t* miter;
+	miter = cc_map_findp(self->map_pinfo, 0, ptr);
+	if(miter == NULL)
+	{
+		LOGE("invalid %s@%i ptr=%p", func, line, ptr);
+		return 0;
+	}
+
+	return 1;
+}
+
 static void cc_meminfo_meminfo(cc_meminfo_t* self)
 {
 	ASSERT(self);
@@ -407,6 +426,33 @@ cc_memory_rem(const char* func, int line, void* ptr)
 	pthread_mutex_unlock(&memory_mutex);
 }
 
+static int
+cc_memory_memcheckptr(const char* func, int line, void* ptr)
+{
+	ASSERT(func);
+
+	// ignore NULL
+	if(ptr == NULL)
+	{
+		return 1;
+	}
+
+	pthread_mutex_lock(&memory_mutex);
+
+	if(cc_meminfo_init() == NULL)
+	{
+		pthread_mutex_unlock(&memory_mutex);
+		return 0;
+	}
+
+	int ret = cc_meminfo_memcheckptr(memory_meminfo,
+	                                 func, line, ptr);
+
+	pthread_mutex_unlock(&memory_mutex);
+
+	return ret;
+}
+
 static void cc_memory_meminfo(void)
 {
 	pthread_mutex_lock(&memory_mutex);
@@ -468,6 +514,12 @@ void cc_meminfo_debug(void)
 {
 	cc_meminfo();
 	cc_memory_meminfo();
+}
+
+int cc_memcheckptr_debug(const char* func, int line,
+                         void* ptr)
+{
+	return cc_memory_memcheckptr(func, line, ptr);
 }
 
 #endif // MEMORY_DEBUG

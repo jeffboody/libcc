@@ -32,6 +32,7 @@ void* cc_calloc_debug(const char* func, int line,
 void* cc_realloc_debug(const char* func, int line,
                        void* ptr, size_t size);
 void  cc_free_debug(const char* func, int line, void* ptr);
+int   cc_memcheckptr_debug(const char* func, int line, void* ptr);
 void  cc_meminfo_debug(void);
 #endif
 
@@ -73,6 +74,14 @@ size_t cc_memsizeptr(void* ptr);
 		#define FREE(...) (cc_free_debug(__func__, __LINE__, __VA_ARGS__))
 	#else
 		#define FREE(...) (cc_free(__VA_ARGS__))
+	#endif
+#endif
+
+#ifndef MEMCHECK
+	#ifdef MEMORY_DEBUG
+		#define MEMCHECKPTR(...) (cc_memcheckptr_debug(__func__, __LINE__, __VA_ARGS__))
+	#else
+		#define MEMCHECKPTR(...)
 	#endif
 #endif
 
