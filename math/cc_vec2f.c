@@ -243,3 +243,24 @@ float cc_vec2f_cross(const cc_vec2f_t* a,
 
 	return a->x*b->y - b->x*a->y;
 }
+
+void cc_vec2f_quadraticBezier(const cc_vec2f_t* a,
+                              const cc_vec2f_t* b,
+                              const cc_vec2f_t* c,
+                              float t,
+                              cc_vec2f_t* p)
+{
+	ASSERT(a);
+	ASSERT(b);
+	ASSERT(c);
+	ASSERT(p);
+
+	// https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Quadratic_B%C3%A9zier_curves
+	// 0 <= t <= 1
+
+	float t2  = t*t;
+	float t1  = 1.0f - t;
+	float t12 = t1*t1;
+	p->x = b->x + t12*(a->x - b->x) + t2*(c->x - b->x);
+	p->y = b->y + t12*(a->y - b->y) + t2*(c->y - b->y);
+}

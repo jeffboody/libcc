@@ -70,5 +70,10 @@ float cc_vec2f_distance(const cc_vec2f_t* a,
                         const cc_vec2f_t* b);
 float cc_vec2f_cross(const cc_vec2f_t* a,
                      const cc_vec2f_t* b);
+void  cc_vec2f_quadraticBezier(const cc_vec2f_t* a,
+                               const cc_vec2f_t* b,
+                               const cc_vec2f_t* c,
+                               float t,
+                               cc_vec2f_t* p);
 
 #endif
