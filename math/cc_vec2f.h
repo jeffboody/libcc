@@ -75,5 +75,8 @@ void  cc_vec2f_quadraticBezier(const cc_vec2f_t* a,
                                const cc_vec2f_t* c,
                                float t,
                                cc_vec2f_t* p);
+float cc_vec2f_triangleArea(const cc_vec2f_t* a,
+                            const cc_vec2f_t* b,
+                            const cc_vec2f_t* c);
 
 #endif

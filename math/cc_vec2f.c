@@ -264,3 +264,29 @@ void cc_vec2f_quadraticBezier(const cc_vec2f_t* a,
 	p->x = b->x + t12*(a->x - b->x) + t2*(c->x - b->x);
 	p->y = b->y + t12*(a->y - b->y) + t2*(c->y - b->y);
 }
+
+float cc_vec2f_triangleArea(const cc_vec2f_t* a,
+                            const cc_vec2f_t* b,
+                            const cc_vec2f_t* c)
+{
+	ASSERT(a);
+	ASSERT(b);
+	ASSERT(c);
+
+	// Using Heron’s Formula
+	// https://www.cuemath.com/measurement/area-of-triangle/
+
+	cc_vec2f_t ab;
+	cc_vec2f_t bc;
+	cc_vec2f_t ca;
+	cc_vec2f_subv_copy(b, a, &ab);
+	cc_vec2f_subv_copy(c, b, &bc);
+	cc_vec2f_subv_copy(a, c, &ca);
+
+	float A = cc_vec2f_mag(&ab);
+	float B = cc_vec2f_mag(&bc);
+	float C = cc_vec2f_mag(&ca);
+	float s = (A + B + C)/2.0f;
+
+	return sqrtf(s*(s - A)*(s - B)*(s - C));
+}
