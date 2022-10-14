@@ -65,13 +65,16 @@ typedef struct
 #ifdef ANDROID
 static cc_listPool_t g_list_pool;
 
-void cc_listPool_init(void)
+int cc_listPool_init(void)
 {
 	memset(&g_list_pool, 0, sizeof(cc_listPool_t));
 	if(pthread_mutex_init(&g_list_pool.mutex, NULL) != 0)
 	{
 		LOGE("pthread_mutex_init failed");
+		return 0;
 	}
+
+	return 1;
 }
 
 void cc_listPool_destroy(void)
