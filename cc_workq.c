@@ -660,6 +660,52 @@ int cc_workq_run(cc_workq_t* self, void* task,
 	return CC_WORKQ_STATUS_ERROR;
 }
 
+int cc_workq_wait(cc_workq_t* self, void* task,
+                  int blocking)
+{
+	ASSERT(self);
+	ASSERT(task);
+
+	int status = CC_WORKQ_STATUS_ERROR;
+
+	pthread_mutex_lock(&self->mutex);
+
+	// find task in map
+	cc_listIter_t* iter;
+	cc_mapIter_t*  miter;
+	miter = cc_map_findp(self->map_task, 0, task);
+	if(miter == NULL)
+	{
+		pthread_mutex_unlock(&self->mutex);
+		return status;
+	}
+	iter = (cc_listIter_t*) cc_map_val(miter);
+
+	cc_workqNode_t* node;
+	node = (cc_workqNode_t*) cc_list_peekIter(iter);
+	while((node->status == CC_WORKQ_STATUS_PENDING) ||
+	      (node->status == CC_WORKQ_STATUS_ACTIVE))
+	{
+		if(blocking == 0)
+		{
+			pthread_mutex_unlock(&self->mutex);
+			return node->status;
+		}
+
+		// must wait for pending/active task to complete
+		pthread_cond_wait(&self->cond_complete, &self->mutex);
+	}
+
+	status = node->status;
+
+	// cancel completed task
+	cc_workq_removeLocked(self, 0, self->queue_complete,
+	                      &iter);
+
+	pthread_mutex_unlock(&self->mutex);
+	return status;
+}
+
 int cc_workq_cancel(cc_workq_t* self, void* task,
                     int blocking)
 {
