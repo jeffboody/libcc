@@ -142,14 +142,6 @@ static void* cc_workq_thread(void* arg)
 		              self->queue_active, iter, NULL);
 		node->status = CC_WORKQ_STATUS_ACTIVE;
 
-		// wake another thread
-		// allows signal instead of broadcast for
-		// cond_pending
-		if(cc_list_size(self->queue_pending) > 0)
-		{
-			pthread_cond_signal(&self->cond_pending);
-		}
-
 		pthread_mutex_unlock(&self->mutex);
 
 		// run the task
@@ -163,10 +155,7 @@ static void* cc_workq_thread(void* arg)
 		                     CC_WORKQ_STATUS_FAILURE;
 		cc_list_swapn(self->queue_active,
 		              self->queue_complete, iter, NULL);
-
-		// signal anybody pending for the workq to become
-		// idle
-		pthread_cond_signal(&self->cond_complete);
+		pthread_cond_broadcast(&self->cond_complete);
 	}
 }
 static void cc_workq_flushLocked(cc_workq_t* self)
@@ -560,7 +549,7 @@ int cc_workq_run(cc_workq_t* self, void* task,
 		status = node->status;
 
 		// wake up workq thread
-		pthread_cond_signal(&self->cond_pending);
+		pthread_cond_broadcast(&self->cond_pending);
 	}
 	else
 	{
