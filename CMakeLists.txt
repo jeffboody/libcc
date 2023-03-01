@@ -25,6 +25,13 @@ if(CC_USE_MATH)
         math/cc_vec4f.c)
 endif()
 
+if(CC_USE_RNG)
+    set(SOURCE_RNG
+        ../pcg_c_basic/pcg_basic.c
+        rng/cc_rngUniform.c
+        rng/cc_rngNormal.c)
+endif()
+
 # Submodule library
 add_library(cc
             STATIC
@@ -39,7 +46,8 @@ add_library(cc
             cc_mumurhash3.c
             cc_timestamp.c
             cc_workq.c
-            ${SOURCE_MATH})
+            ${SOURCE_MATH}
+            ${SOURCE_RNG})
 
 # Linking
 target_link_libraries(cc

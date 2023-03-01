@@ -30,6 +30,12 @@ ifeq ($(CC_USE_MATH),1)
 		math/cc_vec3f        \
 		math/cc_vec4f
 endif
+ifeq ($(CC_USE_RNG),1)
+	CLASSES += \
+		../pcg-c-basic/pcg_basic \
+		rng/cc_rngUniform        \
+		rng/cc_rngNormal
+endif
 SOURCE  = $(CLASSES:%=%.c)
 OBJECTS = $(SOURCE:.c=.o)
 HFILES  = $(CLASSES:%=%.h)
