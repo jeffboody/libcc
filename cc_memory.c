@@ -23,6 +23,7 @@
 
 #include <pthread.h>
 #include <stdlib.h>
+#include <inttypes.h>
 
 #define LOG_TAG "cc"
 #include "cc_log.h"
@@ -365,9 +366,9 @@ static void cc_meminfo_meminfo(cc_meminfo_t* self)
 	{
 		cc_ator_t* ator = (cc_ator_t*) cc_map_val(miter);
 
-		LOGI("name=%s, cnt_pinfo=%i, size=%i",
+		LOGI("name=%s, cnt_pinfo=%i, size=%" PRIu64,
 		     ator->name, cc_map_size(ator->map_pinfo_ref),
-		     (int) ator->size);
+		     (uint64_t) ator->size);
 
 		miter = cc_map_next(miter);
 	}
@@ -628,8 +629,8 @@ size_t cc_memcount(void)
 void cc_meminfo(void)
 {
 	pthread_mutex_lock(&memory_mutex);
-	LOGI("count=%i, size=%i",
-	     (int) memory_count, (int) memory_size);
+	LOGI("count=%i, size=%" PRIu64,
+	     (int) memory_count, (uint64_t) memory_size);
 	pthread_mutex_unlock(&memory_mutex);
 }
 
