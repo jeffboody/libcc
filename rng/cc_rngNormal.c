@@ -80,11 +80,8 @@ void cc_rngNormal_init(cc_rngNormal_t* self,
 
 	uint64_t initstate = time(NULL) ^ (intptr_t)&printf;
 	uint64_t initseq   = 0;
-	pcg32_srandom_r(&self->rng, initstate, initseq);
-
-	self->mu    = mu;
-	self->sigma = sigma;
-	self->phase = 0;
+	cc_rngNormal_initSeed(self, mu, sigma,
+	                      initstate, initseq);
 }
 
 void cc_rngNormal_initSeed(cc_rngNormal_t* self,
@@ -95,7 +92,11 @@ void cc_rngNormal_initSeed(cc_rngNormal_t* self,
 {
 	ASSERT(self);
 
+	#ifdef CC_RNG_DEBUG
+	pcg32_srandom_r(&self->rng, 42u, 54u);
+	#else
 	pcg32_srandom_r(&self->rng, initstate, initseq);
+	#endif
 
 	self->mu    = mu;
 	self->sigma = sigma;

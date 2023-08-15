@@ -41,6 +41,9 @@ OBJECTS = $(SOURCE:.c=.o)
 HFILES  = $(CLASSES:%=%.h)
 OPT     = -O2 -Wall
 CFLAGS  = $(OPT)
+ifeq ($(CC_RNG_DEBUG),1)
+	CFLAGS += -DCC_RNG_DEBUG
+endif
 LDFLAGS = -lm
 AR      = ar
 

@@ -40,7 +40,7 @@ void cc_rngUniform_init(cc_rngUniform_t* self)
 
 	uint64_t initstate = time(NULL) ^ (intptr_t)&printf;
 	uint64_t initseq   = 0;
-	pcg32_srandom_r(&self->rng, initstate, initseq);
+	cc_rngUniform_initSeed(self, initstate, initseq);
 }
 
 void cc_rngUniform_initSeed(cc_rngUniform_t* self,
@@ -49,7 +49,11 @@ void cc_rngUniform_initSeed(cc_rngUniform_t* self,
 {
 	ASSERT(self);
 
+	#ifdef CC_RNG_DEBUG
+	pcg32_srandom_r(&self->rng, 42u, 54u);
+	#else
 	pcg32_srandom_r(&self->rng, initstate, initseq);
+	#endif
 }
 
 uint32_t cc_rngUniform_rand1U(cc_rngUniform_t* self)
