@@ -36,7 +36,7 @@ int cc_fplane_clipsphere(const cc_fplane_t* self,
 	ASSERT(s);
 
 	if(cc_plane_clipsphere(&self->near,   s) ||
-	   cc_plane_clipsphere(&self->far,    s) ||
+	   cc_plane_clipsphere(&self->farx,   s) ||
 	   cc_plane_clipsphere(&self->left,   s) ||
 	   cc_plane_clipsphere(&self->right,  s) ||
 	   cc_plane_clipsphere(&self->top,    s) ||
@@ -55,7 +55,7 @@ int cc_fplane_clippoint(const cc_fplane_t* self,
 	ASSERT(pt);
 
 	if((cc_plane_distance(&self->near,   pt) < 0.0f) ||
-	   (cc_plane_distance(&self->far,    pt) < 0.0f) ||
+	   (cc_plane_distance(&self->farx,   pt) < 0.0f) ||
 	   (cc_plane_distance(&self->left,   pt) < 0.0f) ||
 	   (cc_plane_distance(&self->right,  pt) < 0.0f) ||
 	   (cc_plane_distance(&self->top,    pt) < 0.0f) ||

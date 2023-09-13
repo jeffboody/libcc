@@ -29,7 +29,7 @@
 typedef struct
 {
 	cc_plane_t near;
-	cc_plane_t far;
+	cc_plane_t farx;
 	cc_plane_t left;
 	cc_plane_t right;
 	cc_plane_t top;
