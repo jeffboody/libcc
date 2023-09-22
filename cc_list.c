@@ -181,6 +181,7 @@ static void cc_listPool_put(cc_listIter_t* iters)
 	if(pool->refcount == 0)
 	{
 		pool->iters = NULL;
+		pool->count = 0;
 
 		cc_listBlock_t* block = pool->blocks;
 		while(block)
