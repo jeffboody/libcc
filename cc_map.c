@@ -80,8 +80,8 @@ cc_mapNode_new(cc_map_t* map, const void* val,
                uint32_t hash, int idx, int len,
                const uint8_t* key)
 {
+	// val may be NULL
 	ASSERT(map);
-	ASSERT(val);
 	ASSERT(len > 0);
 	ASSERT(key);
 
@@ -416,9 +416,8 @@ cc_map_addAt(cc_map_t* self, cc_mapIter_t* miter_at,
              uint32_t hash, int idx, const void* val,
              int len, const uint8_t* key)
 {
-	// miter_at may be NULL
+	// miter_at and val may be NULL
 	ASSERT(self);
-	ASSERT(val);
 	ASSERT(key);
 
 	cc_mapNode_t* node;
@@ -681,8 +680,8 @@ cc_mapIter_t*
 cc_map_addp(cc_map_t* self, const void* val,
             int len, const void* key)
 {
+	// val may be NULL
 	ASSERT(self);
-	ASSERT(val);
 	ASSERT(key);
 
 	// 8-byte aligned temp buffer (if needed)
@@ -764,8 +763,8 @@ cc_mapIter_t*
 cc_map_add(cc_map_t* self,
            const void* val, const char* key)
 {
+	// val may be NULL
 	ASSERT(self);
-	ASSERT(val);
 	ASSERT(key);
 
 	int len = strlen(key) + 1;
@@ -776,8 +775,8 @@ cc_mapIter_t*
 cc_map_addf(cc_map_t* self,
             const void* val, const char* fmt, ...)
 {
+	// val may be NULL
 	ASSERT(self);
-	ASSERT(val);
 	ASSERT(fmt);
 
 	char key[CC_MAP_KEYLEN];
