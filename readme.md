@@ -1,5 +1,8 @@
+CC Library
+==========
+
 Introduction
-============
+------------
 
 The CC library is a collection of data structures,
 algorithms, and utility functions designed to accelerate C
@@ -22,7 +25,7 @@ manipulation, and mathematical operations.
   and power-of-two calculations.
 
 License
-=======
+-------
 
 The CC library was developed by
 [Jeff Boody](mailto:jeffboody@gmail.com)
