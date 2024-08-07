@@ -18,7 +18,7 @@ manipulation, and mathematical operations.
   synchronization primitives.
 * Essential Utilities: Simplify development with robust
   logging, flexible memory management, random number
-  generation, and precise timestamping.
+  generation, json parsing, and precise timestamping.
 * Advanced Math Functions: Perform complex calculations with
   float operators, conversions, vector and matrix
   operations, quaternion operations, raycasting, clipping,

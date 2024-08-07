@@ -9,6 +9,11 @@ CLASSES = \
 	cc_mumurhash3 \
 	cc_timestamp  \
 	cc_workq
+ifeq ($(CC_USE_JSMN),1)
+	CLASSES += \
+		jsmn/cc_jsmnWrapper \
+		jsmn/cc_jsmnStream
+endif
 ifeq ($(CC_USE_MATH),1)
 	CLASSES += \
 		math/cc_doubleSingle \

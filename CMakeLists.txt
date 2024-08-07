@@ -3,6 +3,12 @@ cmake_minimum_required(VERSION 3.4.1)
 # Compiler options
 add_compile_options(-Wall)
 
+if(CC_USE_JSMN)
+    set(SOURCE_JSMN
+        jsmn/cc_jsmnWrapper.c
+        jsmn/cc_jsmnStream.c)
+endif()
+
 if(CC_USE_MATH)
     set(SOURCE_MATH
         math/cc_doubleSingle.c
@@ -46,6 +52,7 @@ add_library(cc
             cc_mumurhash3.c
             cc_timestamp.c
             cc_workq.c
+            ${SOURCE_JSMN}
             ${SOURCE_MATH}
             ${SOURCE_RNG})
 
