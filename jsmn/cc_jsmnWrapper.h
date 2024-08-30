@@ -29,10 +29,10 @@
 typedef enum
 {
 	CC_JSMN_TYPE_UNDEFINED = 0,
-	CC_JSMN_TYPE_OBJECT    = 1,
-	CC_JSMN_TYPE_ARRAY     = 2,
-	CC_JSMN_TYPE_STRING    = 3,
-	CC_JSMN_TYPE_PRIMITIVE = 4
+	CC_JSMN_TYPE_OBJECT    = 1 << 0,
+	CC_JSMN_TYPE_ARRAY     = 1 << 1,
+	CC_JSMN_TYPE_STRING    = 1 << 2,
+	CC_JSMN_TYPE_PRIMITIVE = 1 << 3
 } cc_jsmnType_e;
 
 typedef struct
