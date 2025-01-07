@@ -858,10 +858,10 @@ void cc_mat4f_frustum(cc_mat4f_t* self, int load,
 	}
 }
 
-void cc_mat4f_orthoVK(cc_mat4f_t* self, int load,
-                      float l, float r,
-                      float b, float t,
-                      float n, float f)
+void cc_mat4f_ortho(cc_mat4f_t* self, int load,
+                    float l, float r,
+                    float b, float t,
+                    float n, float f)
 {
 	ASSERT(self);
 

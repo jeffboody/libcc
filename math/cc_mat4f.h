@@ -115,10 +115,10 @@ void cc_mat4f_frustum(cc_mat4f_t* self, int load,
                       float l, float r,
                       float b, float t,
                       float n, float f);
-void cc_mat4f_orthoVK(cc_mat4f_t* self, int load,
-                      float l, float r,
-                      float b, float t,
-                      float n, float f);
+void cc_mat4f_ortho(cc_mat4f_t* self, int load,
+                    float l, float r,
+                    float b, float t,
+                    float n, float f);
 void cc_mat4f_normalmatrix(const cc_mat4f_t* self,
                            cc_mat3f_t* nm);
 
