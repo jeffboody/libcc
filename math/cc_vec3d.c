@@ -103,8 +103,8 @@ double cc_vec3d_mag(const cc_vec3d_t* self)
 {
 	ASSERT(self);
 
-	return sqrtf(self->x*self->x + self->y*self->y +
-	             self->z*self->z);
+	return sqrt(self->x*self->x + self->y*self->y +
+	            self->z*self->z);
 }
 
 void cc_vec3d_addv(cc_vec3d_t* self,
