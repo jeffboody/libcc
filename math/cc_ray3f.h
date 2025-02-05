@@ -38,6 +38,10 @@ void cc_ray3f_load(cc_ray3f_t* self,
                    float vx, float vy, float vz);
 int  cc_ray3f_hitsphere(const cc_ray3f_t* self,
                         const cc_sphere_t* s);
+int  cc_ray3f_intersect(const cc_ray3f_t* self,
+                        const cc_sphere_t* s,
+                        float* near,
+                        float* far);
 void cc_ray3f_getpoint(const cc_ray3f_t* self, float s,
                        cc_vec3f_t* p);
 

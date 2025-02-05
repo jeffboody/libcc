@@ -21,6 +21,7 @@
  *
  */
 
+#include <math.h>
 #include <stdlib.h>
 
 #define LOG_TAG "cc"
@@ -72,6 +73,66 @@ int cc_ray3f_hitsphere(const cc_ray3f_t* self,
 
 	// does ray pass through sphere
 	return (d < s->r) ? 1 : 0;
+}
+
+int cc_ray3f_intersect(const cc_ray3f_t* ray,
+                       const cc_sphere_t* sphere,
+                       float* near,
+                       float* far)
+{
+	ASSERT(ray);
+	ASSERT(sphere);
+	ASSERT(near);
+	ASSERT(far);
+
+	// https://www.perplexity.ai
+	// docs/ray_sphere_intersect.c
+
+	cc_vec3f_t pc =
+	{
+		.x = ray->p.x - sphere->c.x,
+		.y = ray->p.y - sphere->c.y,
+		.z = ray->p.z - sphere->c.z,
+	};
+	float a = ray->v.x*ray->v.x + ray->v.y*ray->v.y +
+	          ray->v.z*ray->v.z;
+	float b = 2.0f*(pc.x*ray->v.x + pc.y*ray->v.y +
+	          pc.z*ray->v.z);
+	float c = pc.x*pc.x + pc.y*pc.y + pc.z*pc.z -
+	          sphere->r*sphere->r;
+
+	float discriminant = b*b - 4*a*c;
+
+	// check for ray-sphere intersection
+	if (discriminant < 0)
+	{
+		return 0;
+	}
+
+	// compute the intersection distance
+	float t1 = (-b - sqrt(discriminant))/(2.0f*a);
+	float t2 = (-b + sqrt(discriminant))/(2.0f*a);
+
+	// determine the nearest intersection
+	if (t1 > t2)
+	{
+		float temp = t1;
+		t1 = t2;
+		t2 = temp;
+	}
+
+	// check if the ray origin is inside the sphere
+	if (t1 < 0.0f)
+	{
+		*near = 0.0f;
+		*far  = t2;
+		return 1;
+	}
+
+	// ray intersects the sphere twice
+	*near = t1;
+	*far  = t2;
+	return 2;
 }
 
 void
