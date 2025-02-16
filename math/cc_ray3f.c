@@ -121,15 +121,25 @@ int cc_ray3f_intersect(const cc_ray3f_t* ray,
 		t2 = temp;
 	}
 
-	// check if the ray origin is inside the sphere
+	// check the ray origin
 	if (t1 < 0.0f)
 	{
+		if (t2 < 0.0f)
+		{
+			// ray origin is outside of the sphere but
+			// ray does not have forward intersections
+			return 0;
+		}
+
+		// ray origin is inside of the sphere and
+		// ray has one forward intersection
 		*near = 0.0f;
 		*far  = t2;
 		return 1;
 	}
 
-	// ray intersects the sphere twice
+	// ray origin is outside of the sphere and
+	// ray has two forward intersections
 	*near = t1;
 	*far  = t2;
 	return 2;
