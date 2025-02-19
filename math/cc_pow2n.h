@@ -29,5 +29,6 @@
 uint32_t cc_pow2n(uint32_t n);
 uint32_t cc_next_pow2n(uint32_t v);
 uint64_t cc_next_pow2n64(uint64_t v);
+int      cc_find_pow2n(uint32_t v);
 
 #endif

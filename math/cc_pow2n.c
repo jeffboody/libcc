@@ -104,3 +104,22 @@ uint64_t cc_next_pow2n64(uint64_t v)
 	v++;
 	return v;
 }
+
+int cc_find_pow2n(uint32_t v)
+{
+	int      n = 0;
+	uint64_t a = 1;
+	uint64_t b = v;
+	while(a < b)
+	{
+		a *= 2;
+		++n;
+	}
+
+	if(a == b)
+	{
+		return n;
+	}
+
+	return -1;
+}
