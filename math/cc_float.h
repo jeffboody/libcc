@@ -25,6 +25,7 @@
 #define cc_float_H
 
 // operators
+float cc_sign(float x);
 float cc_ceil(float x);
 float cc_clamp(float x, float min, float max);
 float cc_floor(float x);

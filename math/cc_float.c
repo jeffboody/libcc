@@ -30,6 +30,15 @@
 * public - operators                                       *
 ***********************************************************/
 
+float cc_sign(float x)
+{
+	if(x >= 0.0f)
+	{
+		return 1.0f;
+	}
+	return -1.0f;
+}
+
 float cc_ceil(float x)
 {
 	int xi = (int) x;
