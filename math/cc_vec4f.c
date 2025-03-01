@@ -253,3 +253,16 @@ float cc_vec4f_dot(const cc_vec4f_t* a, const cc_vec4f_t* b)
 
 	return a->x*b->x + a->y*b->y + a->z*b->z + a->w*b->w;
 }
+
+void cc_vec4f_lerp(const cc_vec4f_t* a, const cc_vec4f_t* b,
+                   float s, cc_vec4f_t* c)
+{
+	ASSERT(a);
+	ASSERT(b);
+	ASSERT(c);
+
+	c->x = a->x + s*(b->x - a->x);
+	c->y = a->y + s*(b->y - a->y);
+	c->z = a->z + s*(b->z - a->z);
+	c->w = a->w + s*(b->w - a->w);
+}

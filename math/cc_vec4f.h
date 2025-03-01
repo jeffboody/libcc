@@ -87,6 +87,10 @@ void  cc_vec4f_normalize_copy(const cc_vec4f_t* self,
                               cc_vec4f_t* copy);
 float cc_vec4f_dot(const cc_vec4f_t* a,
                    const cc_vec4f_t* b);
+void  cc_vec4f_lerp(const cc_vec4f_t* a,
+                    const cc_vec4f_t* b,
+                    float s,
+                    cc_vec4f_t* c);
 
 // TODO - homogeneous operations
 
