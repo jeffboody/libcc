@@ -30,6 +30,7 @@ ifeq ($(CC_USE_MATH),1)
 		math/cc_ray3f        \
 		math/cc_rect12f      \
 		math/cc_sphere       \
+		math/cc_sphere3d     \
 		math/cc_stack4f      \
 		math/cc_vec2f        \
 		math/cc_vec3d        \

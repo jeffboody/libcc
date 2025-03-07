@@ -24,6 +24,7 @@
 #ifndef cc_ray3d_H
 #define cc_ray3d_H
 
+#include "cc_sphere3d.h"
 #include "cc_vec3d.h"
 
 typedef struct
@@ -35,6 +36,12 @@ typedef struct
 void cc_ray3d_load(cc_ray3d_t* self,
                    double px, double py, double pz,
                    double vx, double vy, double vz);
+int  cc_ray3d_hitsphere(const cc_ray3d_t* self,
+                        const cc_sphere3d_t* s);
+int  cc_ray3d_intersect(const cc_ray3d_t* self,
+                        const cc_sphere3d_t* s,
+                        double* near,
+                        double* far);
 void cc_ray3d_getpoint(const cc_ray3d_t* self, double s,
                        cc_vec3d_t* p);
 
