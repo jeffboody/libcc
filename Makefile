@@ -19,6 +19,7 @@ ifeq ($(CC_USE_MATH),1)
 		math/cc_doubleSingle \
 		math/cc_float        \
 		math/cc_fplane       \
+		math/cc_mat3d        \
 		math/cc_mat3f        \
 		math/cc_mat4f        \
 		math/cc_orientation  \
