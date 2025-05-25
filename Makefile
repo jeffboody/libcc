@@ -35,6 +35,7 @@ ifeq ($(CC_USE_MATH),1)
 		math/cc_vec2f        \
 		math/cc_vec3d        \
 		math/cc_vec3f        \
+		math/cc_vec4d        \
 		math/cc_vec4f
 endif
 ifeq ($(CC_USE_RNG),1)
