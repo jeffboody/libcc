@@ -610,17 +610,23 @@ void cc_mat4f_lookat(cc_mat4f_t* self, int load,
 
 	cc_vec3f_t eye =
 	{
-		eyex, eyey, eyez
+		.x = eyex,
+		.y = eyey,
+		.z = eyez
 	};
 
 	cc_vec3f_t center =
 	{
-		centerx, centery, centerz
+		.x = centerx,
+		.y = centery,
+		.z = centerz
 	};
 
 	cc_vec3f_t up =
 	{
-		upx, upy, upz
+		.x = upx,
+		.y = upy,
+		.z = upz
 	};
 
 	cc_vec3f_t n;

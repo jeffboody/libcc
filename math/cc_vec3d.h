@@ -28,9 +28,24 @@
 
 typedef struct
 {
-	double x;
-	double y;
-	double z;
+	union
+	{
+		// point or vector
+		struct
+		{
+			double x;
+			double y;
+			double z;
+		};
+
+		// color
+		struct
+		{
+			double r;
+			double g;
+			double b;
+		};
+	};
 } cc_vec3d_t;
 
 // dynamic constructor/destructor

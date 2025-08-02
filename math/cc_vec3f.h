@@ -28,9 +28,24 @@
 
 typedef struct
 {
-	float x;
-	float y;
-	float z;
+	union
+	{
+		// point or vector
+		struct
+		{
+			float x;
+			float y;
+			float z;
+		};
+
+		// color
+		struct
+		{
+			float r;
+			float g;
+			float b;
+		};
+	};
 } cc_vec3f_t;
 
 // dynamic constructor/destructor
