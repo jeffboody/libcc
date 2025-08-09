@@ -85,6 +85,10 @@ void   cc_vec3d_normalize_copy(const cc_vec3d_t* self,
                                cc_vec3d_t* copy);
 double cc_vec3d_dot(const cc_vec3d_t* a,
                    const cc_vec3d_t* b);
+void   cc_vec3d_lerp(const cc_vec3d_t* a,
+                     const cc_vec3d_t* b,
+                     double s,
+                     cc_vec3d_t* c);
 double cc_vec3d_distance(const cc_vec3d_t* a,
                          const cc_vec3d_t* b);
 void   cc_vec3d_cross(cc_vec3d_t* self,

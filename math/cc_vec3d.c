@@ -245,6 +245,20 @@ cc_vec3d_dot(const cc_vec3d_t* a, const cc_vec3d_t* b)
 	return a->x*b->x + a->y*b->y + a->z*b->z;
 }
 
+void cc_vec3d_lerp(const cc_vec3d_t* a,
+                   const cc_vec3d_t* b,
+                   double s,
+                   cc_vec3d_t* c)
+{
+	ASSERT(a);
+	ASSERT(b);
+	ASSERT(c);
+
+	c->x = a->x + s*(b->x - a->x);
+	c->y = a->y + s*(b->y - a->y);
+	c->z = a->z + s*(b->z - a->z);
+}
+
 double
 cc_vec3d_distance(const cc_vec3d_t* a, const cc_vec3d_t* b)
 {
