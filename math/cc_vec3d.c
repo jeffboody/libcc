@@ -21,6 +21,7 @@
  *
  */
 
+#include <float.h>
 #include <math.h>
 #include <stdlib.h>
 
@@ -221,7 +222,7 @@ void cc_vec3d_normalize(cc_vec3d_t* self)
 {
 	ASSERT(self);
 
-	double mag = cc_vec3d_mag(self);
+	double mag = cc_vec3d_mag(self) + DBL_EPSILON;
 	cc_vec3d_muls(self, 1.0f/mag);
 }
 
@@ -231,7 +232,7 @@ void cc_vec3d_normalize_copy(const cc_vec3d_t* self,
 	ASSERT(self);
 	ASSERT(copy);
 
-	double mag = cc_vec3d_mag(self);
+	double mag = cc_vec3d_mag(self) + DBL_EPSILON;
 	cc_vec3d_muls_copy(self, 1.0f/mag, copy);
 }
 
